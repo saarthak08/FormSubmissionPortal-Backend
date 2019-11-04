@@ -98,8 +98,8 @@ public class RegisterController {
     }
 
     // Process confirmation link
-    @RequestMapping(value="/confirm", method = RequestMethod.POST)
-    public ResponseEntity<String> confirmRegistration(@RequestParam Map<String, String> requestParams) {
+    @RequestMapping(value="/confirm", method = RequestMethod.POST,consumes = "application/json")
+    public ResponseEntity<String> confirmRegistration(@RequestParam @RequestBody Map<String, String> requestParams) {
 
         Zxcvbn passwordCheck = new Zxcvbn();
 
