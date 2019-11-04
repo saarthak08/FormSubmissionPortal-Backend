@@ -1,7 +1,6 @@
 package com.sg.fsp.controller;
 
-import com.nulabinc.zxcvbn.Strength;
-import com.nulabinc.zxcvbn.Zxcvbn;
+
 import com.sg.fsp.model.User;
 import com.sg.fsp.service.EmailService;
 import com.sg.fsp.service.UserService;
@@ -22,14 +21,14 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/signup")
 public class RegisterController {
+
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private UserService userService;
     private EmailService emailService;
 
     @Autowired
-    public RegisterController(
-                              UserService userService, EmailService emailService) {
-       // this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    public RegisterController(BCryptPasswordEncoder bCryptPasswordEncoder,UserService userService, EmailService emailService) {
+       this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.userService = userService;
         this.emailService = emailService;
     }
@@ -99,23 +98,14 @@ public class RegisterController {
 
     // Process confirmation link
     @RequestMapping(value="/confirm", method = RequestMethod.POST,consumes = "application/json")
-    public ResponseEntity<String> confirmRegistration(@RequestParam @RequestBody Map<String, String> requestParams) {
-
-        Zxcvbn passwordCheck = new Zxcvbn();
-
-        Strength strength = passwordCheck.measure(requestParams.get("password"));
-
-        if (strength.getScore() < 3) {
-            return new ResponseEntity<>("Your password is too weak.  Choose a stronger one.",HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<String> confirmRegistration(@RequestBody Map<String, String> requestParams) {
 
         // Find the user associated with the reset token
         User user = userService.findByConfirmationToken(requestParams.get("token"));
 
         // Set new password
-        //user.setPassword(bCryptPasswordEncoder.encode(requestParams.get("password")));
+        user.setPassword(bCryptPasswordEncoder.encode(requestParams.get("password")));
 
-        user.setPassword(requestParams.get("password"));
         // Set user to enabled
         user.setEnabled(true);
 
