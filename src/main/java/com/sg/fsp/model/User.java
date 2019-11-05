@@ -42,5 +42,8 @@ public class User implements Serializable {
     @Column(name = "confirmation_token")
     private String confirmationToken;
 
+    //@Column(name="faculty_number")
+    //private String facultyNumber;
+
 
 }

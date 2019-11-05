@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/signup")
 public class RegisterController {
 
@@ -49,17 +50,17 @@ public class RegisterController {
                     HttpStatus.BAD_REQUEST, "User Already Exists");
         }
         else if(userExists!=null&& !userExists.isEnabled()){
-            sendConfirmationMail(user,request);
+            sendConfirmationMail(user,request,false);
             return new ResponseEntity<>("Confirmation email sent!",HttpStatus.OK);
         }
         else {
-            sendConfirmationMail(user,request);
+            sendConfirmationMail(user,request,true);
         }
         return new ResponseEntity<>("User created & confirmation email sent!",HttpStatus.OK);
     }
 
 
-    private void sendConfirmationMail(User user, HttpServletRequest request){
+    private void sendConfirmationMail(User user, HttpServletRequest request,boolean x){
         // new user so we create user and send confirmation e-mail
 
         // Disable user until they click on confirmation link in email
@@ -67,15 +68,17 @@ public class RegisterController {
 
         // Generate random 36-character string token for confirmation link
         user.setConfirmationToken(UUID.randomUUID().toString());
-        userService.saveUser(user);
+        if(x) {
+            userService.saveUser(user);
+        }
 
-        String appUrl = request.getScheme() + "://" + request.getServerName()+":8080";
+        String appUrl = request.getScheme() + "://" + request.getServerName()+":3000";
 
         SimpleMailMessage registrationEmail = new SimpleMailMessage();
         registrationEmail.setTo(user.getEmail());
         registrationEmail.setSubject("Registration Confirmation");
         registrationEmail.setText("To confirm your e-mail address, please click the link below:\n"
-                + appUrl + "/confirm?token=" + user.getConfirmationToken());
+                + appUrl + "/confirm/" + user.getConfirmationToken());
         registrationEmail.setFrom("Form Submission Portal <noreply@formsubmissionportal.com>");
         emailService.sendEmail(registrationEmail);
     }

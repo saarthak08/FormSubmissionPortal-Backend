@@ -36,10 +36,10 @@ public class JWTAuthenticationController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JWTRequest authenticationRequest) throws Exception {
-        authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+        authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(authenticationRequest.getEmail());
-        User user=userDetailsService.findByEmail(authenticationRequest.getEmail());
+                .loadUserByUsername(authenticationRequest.getUsername());
+        User user=userDetailsService.findByEmail(authenticationRequest.getUsername());
         if(user!=null&!user.isEnabled()){
             throw new ResponseStatusException( HttpStatus.UNAUTHORIZED,"User not enabled");
         }
