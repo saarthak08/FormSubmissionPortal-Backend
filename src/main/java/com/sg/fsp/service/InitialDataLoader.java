@@ -36,6 +36,10 @@ public class InitialDataLoader implements
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public Role Student;
+    public Role Dean;
+    public Role Controller;
+
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -59,9 +63,9 @@ public class InitialDataLoader implements
                 readPrivilege, writePrivilege,enableUser,submitForm,checkForm);
 
         createRoleIfNotFound(UserType.ADMIN, adminPrivileges);
-        createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
-        createRoleIfNotFound(UserType.CONTROLLER,Arrays.asList(checkForm,readPrivilege));
-        createRoleIfNotFound(UserType.DEAN,Arrays.asList(checkForm,readPrivilege));
+        Student=createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
+        Controller=createRoleIfNotFound(UserType.CONTROLLER,Arrays.asList(checkForm,readPrivilege));
+        Dean=createRoleIfNotFound(UserType.DEAN,Arrays.asList(checkForm,readPrivilege));
 
         List<Privilege> sd = Arrays.asList(
                 readPrivilege, writePrivilege);

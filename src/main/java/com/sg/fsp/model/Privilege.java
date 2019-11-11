@@ -23,9 +23,6 @@ public class Privilege {
     private Permission permission;
 
 
-    @ManyToMany(mappedBy = "privileges")
-    private Collection<Role> roles;
-
     public Privilege(Permission permission) {
         this.permission = permission;
     }

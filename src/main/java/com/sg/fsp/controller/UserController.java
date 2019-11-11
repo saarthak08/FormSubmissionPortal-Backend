@@ -1,6 +1,8 @@
 package com.sg.fsp.controller;
 
 
+import com.sg.fsp.enums.UserType;
+import com.sg.fsp.model.Role;
 import com.sg.fsp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,10 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -28,5 +34,22 @@ public class UserController {
         com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
         user.setPassword("");
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() throws java.lang.Exception, NullPointerException{
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser=(User)auth.getPrincipal();
+        com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
+        Role role=user.getRole();
+       // if(role.getUserType() != UserType.STUDENT){
+      //      return ResponseEntity.status(401).build();
+      //  }
+       // else {
+            List<com.sg.fsp.model.User> users = userService.getAllUsers();
+            Map<String,List<com.sg.fsp.model.User>> map=new HashMap<>();
+            map.put("users",users);
+            return new ResponseEntity<>(map,HttpStatus.OK);
+       // }
     }
 }

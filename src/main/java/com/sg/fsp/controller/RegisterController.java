@@ -1,8 +1,12 @@
 package com.sg.fsp.controller;
 
 
+import com.sg.fsp.enums.UserType;
+import com.sg.fsp.model.Role;
 import com.sg.fsp.model.User;
+import com.sg.fsp.repository.RoleRepository;
 import com.sg.fsp.service.EmailService;
+import com.sg.fsp.service.InitialDataLoader;
 import com.sg.fsp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,22 +30,26 @@ public class RegisterController {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private UserService userService;
     private EmailService emailService;
+    private RoleRepository roleRepository;
+
 
     @Autowired
-    public RegisterController(BCryptPasswordEncoder bCryptPasswordEncoder,UserService userService, EmailService emailService) {
+    public RegisterController(BCryptPasswordEncoder bCryptPasswordEncoder, UserService userService, EmailService emailService, RoleRepository roleRepository) {
        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.userService = userService;
         this.emailService = emailService;
+        this.roleRepository=roleRepository;
     }
 
 
 
     // Process form input data
     @RequestMapping(value = "/register", method = RequestMethod.POST,consumes = "application/json")
-    public ResponseEntity<String> processRegistrationForm(@Valid @RequestBody User user, HttpServletRequest request) {
+    public ResponseEntity<String> processRegistrationForm(@Valid @RequestBody Map<String, String> user, HttpServletRequest request) {
 
         // Lookup user in database by e-mail
-        User userExists = userService.findByEmail(user.getEmail());
+        User userExists = userService.findByEmail(user.get("email"));
+
 
         System.out.println(userExists);
 
@@ -50,11 +58,25 @@ public class RegisterController {
                     HttpStatus.BAD_REQUEST, "User Already Exists");
         }
         else if(userExists!=null&& !userExists.isEnabled()){
-            sendConfirmationMail(user,request,false);
+            sendConfirmationMail(userExists,request,false);
             return new ResponseEntity<>("Confirmation email sent!",HttpStatus.OK);
         }
         else {
-            sendConfirmationMail(user,request,true);
+            userExists=new User();
+            userExists.setLastName(user.get("lastName"));
+            userExists.setFirstName(user.get("firstName"));
+            userExists.setEmail(user.get("email"));
+            String role=user.get("role");
+            Role role1;
+            if(role.equals("STUDENT")){
+                role1=roleRepository.findByUserType(UserType.STUDENT);
+            } else if (role.equals("DEAN")){
+                role1=roleRepository.findByUserType(UserType.DEAN);
+            } else{
+                role1=roleRepository.findByUserType(UserType.CONTROLLER);
+            }
+            userExists.setRole(role1);
+            sendConfirmationMail(userExists,request,true);
         }
         return new ResponseEntity<>("User created & confirmation email sent!",HttpStatus.OK);
     }
