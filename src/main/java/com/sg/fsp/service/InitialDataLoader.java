@@ -44,41 +44,46 @@ public class InitialDataLoader implements
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        if (alreadySetup)
+        if (alreadySetup){
             return;
-        Privilege readPrivilege
-                = createPrivilegeIfNotFound(Permission.READ_USERS);
-        Privilege writePrivilege
-                = createPrivilegeIfNotFound(Permission.WRITE_USERS);
+        }
+        User adminUser=userRepository.findByEmail("fsp_admin@myamu.ac.in");
+        if(adminUser==null) {
+            Privilege readPrivilege
+                    = createPrivilegeIfNotFound(Permission.READ_USERS);
+            Privilege writePrivilege
+                    = createPrivilegeIfNotFound(Permission.WRITE_USERS);
 
-        Privilege submitForm
-                = createPrivilegeIfNotFound(Permission.SUBMIT_FORM);
-        Privilege checkForm
-                = createPrivilegeIfNotFound(Permission.CHECK_FORM);
-        Privilege enableUser
-                = createPrivilegeIfNotFound(Permission.ENABLE_USER);
+            Privilege submitForm
+                    = createPrivilegeIfNotFound(Permission.SUBMIT_FORM);
+            Privilege checkForm
+                    = createPrivilegeIfNotFound(Permission.CHECK_FORM);
+            Privilege enableUser
+                    = createPrivilegeIfNotFound(Permission.ENABLE_USER);
 
 
-        List<Privilege> adminPrivileges = Arrays.asList(
-                readPrivilege, writePrivilege,enableUser,submitForm,checkForm);
+            List<Privilege> adminPrivileges = Arrays.asList(
+                    readPrivilege, writePrivilege, enableUser, submitForm, checkForm);
 
-        createRoleIfNotFound(UserType.ADMIN, adminPrivileges);
-        Student=createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
-        Controller=createRoleIfNotFound(UserType.CONTROLLER,Arrays.asList(checkForm,readPrivilege));
-        Dean=createRoleIfNotFound(UserType.DEAN,Arrays.asList(checkForm,readPrivilege));
+            createRoleIfNotFound(UserType.ADMIN, adminPrivileges);
+            Student = createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
+            Controller = createRoleIfNotFound(UserType.CONTROLLER, Arrays.asList(checkForm, readPrivilege));
+            Dean = createRoleIfNotFound(UserType.DEAN, Arrays.asList(checkForm, readPrivilege));
 
-        List<Privilege> sd = Arrays.asList(
-                readPrivilege, writePrivilege);
+            List<Privilege> sd = Arrays.asList(
+                    readPrivilege, writePrivilege);
 
-        Role adminRole = roleRepository.findByUserType(UserType.ADMIN);
-        User user = new User();
-        user.setFirstName("ADMIN");
-        user.setLastName("AMU");
-        user.setPassword(passwordEncoder.encode("ZHCET"));
-        user.setEmail("fsp_admin@myamu.ac.in");
-        user.setRole(adminRole);
-     //   userRepository.save(user);
 
+            Role adminRole = roleRepository.findByUserType(UserType.ADMIN);
+            User user = new User();
+            user.setFirstName("ADMIN");
+            user.setLastName("AMU");
+            user.setEnabled(true);
+            user.setPassword(passwordEncoder.encode("ZHCET"));
+            user.setEmail("fsp_admin@myamu.ac.in");
+            user.setRole(adminRole);
+            userRepository.save(user);
+        }
         alreadySetup = true;
     }
 
