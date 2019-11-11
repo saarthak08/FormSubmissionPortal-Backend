@@ -24,8 +24,12 @@ import java.util.Map;
 @CrossOrigin
 public class UserController {
 
-    @Autowired
     private UserService userService;
+
+    @Autowired
+    public UserController(UserService userService){
+        this.userService=userService;
+    }
 
     @GetMapping("/user/info")
     public ResponseEntity<?> getUserInfo(){
@@ -48,6 +52,9 @@ public class UserController {
        // else {
             List<com.sg.fsp.model.User> users = userService.getAllUsers();
             Map<String,List<com.sg.fsp.model.User>> map=new HashMap<>();
+            for(com.sg.fsp.model.User u:users){
+                u.setPassword("");
+            }
             map.put("users",users);
             return new ResponseEntity<>(map,HttpStatus.OK);
        // }

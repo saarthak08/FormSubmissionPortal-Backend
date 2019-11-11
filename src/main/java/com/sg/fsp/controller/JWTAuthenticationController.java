@@ -34,13 +34,17 @@ If the credentials are valid, a JWT token is created using the JWTTokenUtil and 
 @RequestMapping("/api")
 @CrossOrigin
 public class JWTAuthenticationController {
-    @Autowired
+
     private AuthenticationManager authenticationManager;
+    private JWTTokenUtil jwtTokenUtil;
+    private UserService userDetailsService;
 
     @Autowired
-    private JWTTokenUtil jwtTokenUtil;
-    @Autowired
-    private UserService userDetailsService;
+    public JWTAuthenticationController (AuthenticationManager authenticationManager, JWTTokenUtil jwtTokenUtil, UserService userService){
+        this.jwtTokenUtil=jwtTokenUtil;
+        this.authenticationManager=authenticationManager;
+        this.userDetailsService=userService;
+    }
 
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)

@@ -17,21 +17,18 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 
-@Service("userService")
+@Service
 public class UserService implements UserDetailsService {
 
 
-    @Autowired
     private RoleRepository roleRepository;
-
-
     private User user;
-
     private UserRepository userRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.roleRepository=roleRepository;
     }
 
     public User findByEmail(String email) {

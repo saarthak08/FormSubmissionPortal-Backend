@@ -23,14 +23,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurity extends WebSecurityConfigurerAdapter {
-    @Autowired
+
+
     private JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    @Autowired
     private UserService jwtUserDetailsService;
-    @Autowired
     private JWTRequestFilter jwtRequestFilter;
-    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    public WebSecurity(JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint, UserService userService, JWTRequestFilter jwtRequestFilter, BCryptPasswordEncoder bCryptPasswordEncoder){
+        this.jwtAuthenticationEntryPoint=jwtAuthenticationEntryPoint;
+        this.jwtUserDetailsService=userService;
+        this.jwtRequestFilter=jwtRequestFilter;
+        this.bCryptPasswordEncoder=bCryptPasswordEncoder;
+    }
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {

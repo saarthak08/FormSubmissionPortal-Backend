@@ -23,22 +23,22 @@ public class InitialDataLoader implements
         ApplicationListener<ContextRefreshedEvent> {
 
     boolean alreadySetup = false;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private RoleRepository roleRepository;
-
-    @Autowired
     private PrivilegeRepository privilegeRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
-
     public Role Student;
     public Role Dean;
     public Role Controller;
+
+
+    @Autowired
+    public InitialDataLoader(UserRepository userRepository, RoleRepository roleRepository,PrivilegeRepository privilegeRepository, PasswordEncoder passwordEncoder){
+        this.userRepository=userRepository;
+        this.roleRepository=roleRepository;
+        this.privilegeRepository=privilegeRepository;
+        this.passwordEncoder=passwordEncoder;
+    }
 
     @Override
     @Transactional

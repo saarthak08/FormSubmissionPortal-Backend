@@ -24,10 +24,14 @@ If it has a valid JWT Token, then it sets the authentication in context to speci
 
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter {
-    @Autowired
     private UserService jwtUserDetailsService;
-    @Autowired
     private JWTTokenUtil jwtTokenUtil;
+
+    @Autowired
+    public JWTRequestFilter(UserService userService, JWTTokenUtil jwtTokenUtil){
+        this.jwtUserDetailsService=userService;
+        this.jwtTokenUtil=jwtTokenUtil;
+    }
 
 
     @Override
@@ -41,10 +45,10 @@ public class JWTRequestFilter extends OncePerRequestFilter {
 //        response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
 
-
-
         String username = null;
         String jwtToken = null;
+
+
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
@@ -59,9 +63,12 @@ public class JWTRequestFilter extends OncePerRequestFilter {
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
         }
+
         // Once we get the token validate it.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
             UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
+
             // if token is valid configure Spring Security to manually set
             // authentication
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {

@@ -50,10 +50,6 @@ public class User implements Serializable {
     @Column(name = "employee_number")
     private String employeeNumber;
 
-    //@Column(name="faculty_number")
-    //private String facultyNumber;
-
-
     @ManyToOne
     @JoinTable(
             name = "users_roles",
