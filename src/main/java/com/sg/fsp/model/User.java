@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Transient;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 
 @Entity
@@ -42,8 +43,25 @@ public class User implements Serializable {
     @Column(name = "confirmation_token")
     private String confirmationToken;
 
+    @Column(name="faculty_number")
+    private String facultyNumber;
+
+
+    @Column(name = "employee_number")
+    private String employeeNumber;
+
     //@Column(name="faculty_number")
     //private String facultyNumber;
+
+
+    @ManyToOne
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Role role;
 
 
 }

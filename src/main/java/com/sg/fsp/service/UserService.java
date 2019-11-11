@@ -2,6 +2,8 @@ package com.sg.fsp.service;
 
 
 import com.sg.fsp.model.User;
+import com.sg.fsp.enums.UserType;
+import com.sg.fsp.repository.RoleRepository;
 import com.sg.fsp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,11 +11,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 import static java.util.Collections.emptyList;
 
 
 @Service("userService")
 public class UserService implements UserDetailsService {
+
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+
+    private User user;
 
     private UserRepository userRepository;
 
