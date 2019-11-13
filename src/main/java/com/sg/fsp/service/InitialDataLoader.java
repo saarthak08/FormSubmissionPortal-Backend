@@ -4,6 +4,7 @@ package com.sg.fsp.service;
 import com.sg.fsp.enums.Permission;
 import com.sg.fsp.enums.UserType;
 import com.sg.fsp.model.*;
+import com.sg.fsp.repository.FormRepository;
 import com.sg.fsp.repository.PrivilegeRepository;
 import com.sg.fsp.repository.RoleRepository;
 import com.sg.fsp.repository.UserRepository;
@@ -27,17 +28,16 @@ public class InitialDataLoader implements
     private RoleRepository roleRepository;
     private PrivilegeRepository privilegeRepository;
     private PasswordEncoder passwordEncoder;
-    public Role Student;
-    public Role Dean;
-    public Role Controller;
+    private FormRepository formRepository;
 
 
     @Autowired
-    public InitialDataLoader(UserRepository userRepository, RoleRepository roleRepository,PrivilegeRepository privilegeRepository, PasswordEncoder passwordEncoder){
+    public InitialDataLoader(UserRepository userRepository, RoleRepository roleRepository,PrivilegeRepository privilegeRepository, PasswordEncoder passwordEncoder, FormRepository formRepository){
         this.userRepository=userRepository;
         this.roleRepository=roleRepository;
         this.privilegeRepository=privilegeRepository;
         this.passwordEncoder=passwordEncoder;
+        this.formRepository=formRepository;
     }
 
     @Override
@@ -47,32 +47,30 @@ public class InitialDataLoader implements
         if (alreadySetup){
             return;
         }
+
         User adminUser=userRepository.findByEmail("fsp_admin@myamu.ac.in");
         if(adminUser==null) {
             Privilege readPrivilege
                     = createPrivilegeIfNotFound(Permission.READ_USERS);
             Privilege writePrivilege
                     = createPrivilegeIfNotFound(Permission.WRITE_USERS);
-
             Privilege submitForm
                     = createPrivilegeIfNotFound(Permission.SUBMIT_FORM);
             Privilege checkForm
                     = createPrivilegeIfNotFound(Permission.CHECK_FORM);
             Privilege enableUser
                     = createPrivilegeIfNotFound(Permission.ENABLE_USER);
+            Privilege addForm
+                    =createPrivilegeIfNotFound(Permission.ADD_FORM);
 
 
             List<Privilege> adminPrivileges = Arrays.asList(
-                    readPrivilege, writePrivilege, enableUser, submitForm, checkForm);
+                    readPrivilege, writePrivilege, enableUser, submitForm, checkForm, addForm);
 
             createRoleIfNotFound(UserType.ADMIN, adminPrivileges);
-            Student = createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
-            Controller = createRoleIfNotFound(UserType.CONTROLLER, Arrays.asList(checkForm, readPrivilege));
-            Dean = createRoleIfNotFound(UserType.DEAN, Arrays.asList(checkForm, readPrivilege));
-
-            List<Privilege> sd = Arrays.asList(
-                    readPrivilege, writePrivilege);
-
+            Role student = createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
+            Role controller = createRoleIfNotFound(UserType.CONTROLLER, Arrays.asList(checkForm, readPrivilege));
+            Role dean = createRoleIfNotFound(UserType.DEAN, Arrays.asList(checkForm, readPrivilege));
 
             Role adminRole = roleRepository.findByUserType(UserType.ADMIN);
             User user = new User();
@@ -83,6 +81,21 @@ public class InitialDataLoader implements
             user.setEmail("fsp_admin@myamu.ac.in");
             user.setRole(adminRole);
             userRepository.save(user);
+            Form form=new Form();
+            form.setDepartment("Computer");
+            form.setTitle("Continuation-Form");
+            form.setFormCode("CONZHCETCE2019");
+            form.addUser(adminUser);
+            FormDetail formDetail=new FormDetail();
+            formDetail.setEnNumber("GI0471");
+            formDetail.setFirstName("ADMIN");
+            formDetail.setLastName("AMU");
+            formDetail.setFacultyNumber("17COB041");
+            formDetail.setForm(form);
+            form.addFormDetails(formDetail);
+            formRepository.save(form);
+            adminUser.addForm(form);
+            userRepository.save(adminUser);
         }
         alreadySetup = true;
     }

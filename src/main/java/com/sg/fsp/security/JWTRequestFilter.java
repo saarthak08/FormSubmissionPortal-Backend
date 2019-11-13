@@ -24,12 +24,12 @@ If it has a valid JWT Token, then it sets the authentication in context to speci
 
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter {
-    private UserService jwtUserDetailsService;
+    private UserService userService;
     private JWTTokenUtil jwtTokenUtil;
 
     @Autowired
     public JWTRequestFilter(UserService userService, JWTTokenUtil jwtTokenUtil){
-        this.jwtUserDetailsService=userService;
+        this.userService=userService;
         this.jwtTokenUtil=jwtTokenUtil;
     }
 
@@ -67,7 +67,7 @@ public class JWTRequestFilter extends OncePerRequestFilter {
         // Once we get the token validate it.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = this.userService.loadUserByUsername(username);
 
             // if token is valid configure Spring Security to manually set
             // authentication

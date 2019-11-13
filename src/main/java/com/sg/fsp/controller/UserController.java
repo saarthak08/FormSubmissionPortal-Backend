@@ -46,17 +46,24 @@ public class UserController {
         User authUser=(User)auth.getPrincipal();
         com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
         Role role=user.getRole();
-       // if(role.getUserType() != UserType.STUDENT){
-      //      return ResponseEntity.status(401).build();
-      //  }
-       // else {
+        if(role.getUserType() != UserType.STUDENT){
+            return ResponseEntity.status(401).build();
+        }
+        else {
+            com.sg.fsp.model.User adminUser=null;
             List<com.sg.fsp.model.User> users = userService.getAllUsers();
             Map<String,List<com.sg.fsp.model.User>> map=new HashMap<>();
             for(com.sg.fsp.model.User u:users){
                 u.setPassword("");
+                if(u.getEmail().equals("fsp_admin@myamu.ac.in")){
+                    adminUser=u;
+                }
+            }
+            if(adminUser!=null) {
+                users.remove(adminUser);
             }
             map.put("users",users);
             return new ResponseEntity<>(map,HttpStatus.OK);
-       // }
+        }
     }
 }

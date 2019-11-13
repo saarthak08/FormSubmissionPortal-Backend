@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -56,8 +57,13 @@ public class JWTAuthenticationController {
         if(user!=null&!user.isEnabled()){
             throw new ResponseStatusException( HttpStatus.UNAUTHORIZED,"User not enabled");
         }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        org.springframework.security.core.userdetails.User authUser=(org.springframework.security.core.userdetails.User)auth.getPrincipal();
+        com.sg.fsp.model.User resUser=userDetailsService.findByEmail(authUser.getUsername());
+        user.setPassword(null);
+        user.setForms(null);
         final String token = jwtTokenUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new JWTResponse(token));
+        return ResponseEntity.ok(new JWTResponse(token,resUser));
     }
 
 

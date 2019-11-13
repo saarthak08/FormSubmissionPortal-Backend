@@ -3,11 +3,17 @@ package com.sg.fsp.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Email;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.springframework.data.annotation.Transient;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 @Entity
@@ -59,5 +65,39 @@ public class User implements Serializable {
                     name = "role_id", referencedColumnName = "id"))
     private Role role;
 
+
+    @ManyToMany
+    @JsonManagedReference
+    @JoinTable(
+            name = "users_forms",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "form_id")
+    )
+    private List<Form> forms;
+
+
+    public void addForm(Form form){
+        if(forms==null){
+            forms=new ArrayList<>();
+        }
+        forms.add(form);
+    }
+
+    public void deleteForm(Form form){
+        if(forms!=null) {
+            forms.remove(form);
+        }
+    }
+
+    public void updateForm(Form form){
+        if(forms!=null) {
+            for (Form temp : forms) {
+                if (temp.getId() == form.getId()) {
+                    forms.remove(temp);
+                    forms.add(form);
+                }
+            }
+        }
+    }
 
 }
