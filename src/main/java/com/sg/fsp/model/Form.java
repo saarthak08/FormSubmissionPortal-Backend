@@ -1,8 +1,7 @@
 package com.sg.fsp.model;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 import org.hibernate.validator.constraints.UniqueElements;
 
@@ -13,6 +12,9 @@ import java.util.List;
 
 @Data
 @Entity
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Form {
 
 
@@ -31,12 +33,12 @@ public class Form {
     private String department;
 
     @OneToMany(mappedBy = "form",cascade = CascadeType.ALL)
-    @JsonBackReference
+    @JsonIgnore
     private List<FormDetail> formDetails;
 
 
     @ManyToMany(mappedBy = "forms")
-    @JsonBackReference
+    @JsonIgnore
     private List<User> users;
 
 

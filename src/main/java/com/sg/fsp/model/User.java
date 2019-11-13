@@ -4,9 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Email;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 import org.springframework.data.annotation.Transient;
 
@@ -19,6 +17,9 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "user")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class User implements Serializable {
 
     @Id
@@ -33,6 +34,7 @@ public class User implements Serializable {
 
     @Column(name = "password")
     @Transient
+    @JsonIgnore
     private String password;
 
     @Column(name = "first_name")
@@ -47,6 +49,7 @@ public class User implements Serializable {
     private boolean enabled;
 
     @Column(name = "confirmation_token")
+    @JsonIgnore
     private String confirmationToken;
 
     @Column(name="faculty_number")
@@ -67,7 +70,6 @@ public class User implements Serializable {
 
 
     @ManyToMany
-    @JsonManagedReference
     @JoinTable(
             name = "users_forms",
             joinColumns = @JoinColumn(name = "user_id"),

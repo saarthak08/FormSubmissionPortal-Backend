@@ -1,6 +1,7 @@
 package com.sg.fsp.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sg.fsp.enums.UserType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class Role {
 
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(
             name = "roles_privileges",
             joinColumns = @JoinColumn(

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/forms")
 @CrossOrigin
 public class FormController {
 
@@ -106,6 +106,7 @@ public class FormController {
             if(form!=null) {
                 Map<String, Object> res = new HashMap<>();
                 res.put("form", form);
+                res.put("formDetails",form.getFormDetails());
                 return new ResponseEntity<>(res, HttpStatus.OK);
             }
             else{
@@ -130,6 +131,30 @@ public class FormController {
         }
         else {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+
+
+    @GetMapping(value = "/get-form-users/{formCode}")
+    public ResponseEntity<?> getAllUsersofForm(@PathVariable String formCode){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        if(user.getRole().getUserType()== UserType.STUDENT){
+            Form form=formRepository.findFormByFormCode(formCode);
+            if(form!=null) {
+                Map<String, Object> res = new HashMap<>();
+                res.put("form", form);
+                res.put("formUsers",form.getUsers());
+                return new ResponseEntity<>(res, HttpStatus.OK);
+            }
+            else{
+                return ResponseEntity.status(405).build();
+            }
+        }
+        else{
+            return ResponseEntity.status(401).build();
         }
     }
 }

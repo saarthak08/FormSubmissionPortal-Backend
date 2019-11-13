@@ -58,8 +58,6 @@ public class JWTAuthenticationController {
             throw new ResponseStatusException( HttpStatus.UNAUTHORIZED,"User not enabled");
         }
         User resUser=userDetailsService.findByEmail(authenticationRequest.getUsername());
-        resUser.setPassword(null);
-        resUser.setForms(null);
         final String token = jwtTokenUtil.generateToken(userDetails);
         return ResponseEntity.ok(new JWTResponse(token,resUser.getRole().getUserType().name()));
     }

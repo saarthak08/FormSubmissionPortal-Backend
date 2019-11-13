@@ -36,7 +36,6 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser=(User)auth.getPrincipal();
         com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
-        user.setPassword("");
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
@@ -54,7 +53,6 @@ public class UserController {
             List<com.sg.fsp.model.User> users = userService.getAllUsers();
             Map<String,List<com.sg.fsp.model.User>> map=new HashMap<>();
             for(com.sg.fsp.model.User u:users){
-                u.setPassword("");
                 if(u.getEmail().equals("fsp_admin@myamu.ac.in")){
                     adminUser=u;
                 }

@@ -88,9 +88,11 @@ public class InitialDataLoader implements
             form.setFormCode("CONZHCETCE2019");
             form.addUser(adminUser);
             FormDetail formDetail=new FormDetail();
-            formDetail.setEnNumber("GI0471");
+            formDetail.setEnrollmentNumber("GI0471");
             formDetail.setFirstName("ADMIN");
             formDetail.setLastName("AMU");
+            formDetail.setEmail("fsp_admin@myamu.ac.in");
+            formDetail.setPhoneNumber("100");
             formDetail.setFacultyNumber("17COB041");
             formDetail.setForm(form);
             form.addFormDetails(formDetail);

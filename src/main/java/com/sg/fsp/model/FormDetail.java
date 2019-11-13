@@ -1,7 +1,9 @@
 package com.sg.fsp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,6 +13,9 @@ import java.util.List;
 
 @Entity
 @Data
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class FormDetail {
 
     @Id
@@ -27,11 +32,16 @@ public class FormDetail {
     @NotEmpty
     private String facultyNumber;
 
+    @NotEmpty
+    private String email;
+
+    @NotEmpty
+    private String phoneNumber;
+
     @NotEmpty(message = "Provide your enrollment number.")
-    private String enNumber;
+    private String enrollmentNumber;
 
 
-    @JsonManagedReference
     @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
     @JoinColumn(name = "form_id")
     private Form form;
