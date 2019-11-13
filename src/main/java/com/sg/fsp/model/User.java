@@ -25,7 +25,7 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Long id;
 
     @Column(name = "email", nullable = false, unique = true)
     @Email(message =  "Please provide a valid e-mail")

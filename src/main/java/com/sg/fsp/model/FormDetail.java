@@ -1,15 +1,13 @@
 package com.sg.fsp.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Data
@@ -20,7 +18,7 @@ public class FormDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
 
     @NotEmpty
@@ -45,6 +43,11 @@ public class FormDetail {
     @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
     @JoinColumn(name = "form_id")
     private Form form;
+
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "formDetail",cascade = CascadeType.ALL)
+    private FormCheckpoints formCheckpoints;
 
 
 }

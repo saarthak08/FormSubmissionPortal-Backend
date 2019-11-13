@@ -8,7 +8,9 @@ import org.hibernate.validator.constraints.UniqueElements;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Entity
@@ -20,7 +22,7 @@ public class Form {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotEmpty
     private String title;
@@ -40,6 +42,10 @@ public class Form {
     @ManyToMany(mappedBy = "forms")
     @JsonIgnore
     private List<User> users;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "form",cascade = CascadeType.ALL)
+    private FormCheckpoints formCheckpoints;
 
 
     public void addFormDetails(FormDetail formDetail){

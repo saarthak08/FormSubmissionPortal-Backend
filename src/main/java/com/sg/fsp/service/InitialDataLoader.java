@@ -15,9 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
+import javax.persistence.Query;
+import java.util.*;
 
 @Component
 public class InitialDataLoader implements
@@ -43,6 +44,7 @@ public class InitialDataLoader implements
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
+
 
         if (alreadySetup){
             return;
@@ -87,6 +89,7 @@ public class InitialDataLoader implements
             form.setTitle("Continuation-Form");
             form.setFormCode("CONZHCETCE2019");
             form.addUser(adminUser);
+            adminUser.addForm(form);
             FormDetail formDetail=new FormDetail();
             formDetail.setEnrollmentNumber("GI0471");
             formDetail.setFirstName("ADMIN");
@@ -96,8 +99,33 @@ public class InitialDataLoader implements
             formDetail.setFacultyNumber("17COB041");
             formDetail.setForm(form);
             form.addFormDetails(formDetail);
+            FormCheckpoints formCheckpoints=new FormCheckpoints();
+            formCheckpoints.setFormDetail(formDetail);
+            formDetail.setFormCheckpoints(formCheckpoints);
+            Map<String, Boolean> checkPoint=new HashMap<>();
+            checkPoint.put(UserType.CONTROLLER.name(),false);
+            checkPoint.put(UserType.DEAN.name(),false);
+            formCheckpoints.setCheckPoints(checkPoint);
+            form.setFormCheckpoints(formCheckpoints);
+            formCheckpoints.setForm(form);
             formRepository.save(form);
-            adminUser.addForm(form);
+            userRepository.save(adminUser);
+
+            Form form2=new Form();
+            form2.setDepartment("Electronics");
+            form2.setTitle("Second-Form");
+            form2.setFormCode("FORM2");
+            form2.addUser(adminUser);
+            formDetail.setForm(form2);
+            form2.addFormDetails(formDetail);
+            formCheckpoints=new FormCheckpoints();
+            formCheckpoints.setFormDetail(formDetail);
+            formDetail.setFormCheckpoints(formCheckpoints);
+            formCheckpoints.setCheckPoints(checkPoint);
+            form2.setFormCheckpoints(formCheckpoints);
+            formCheckpoints.setForm(form2);
+            formRepository.save(form2);
+            adminUser.addForm(form2);
             userRepository.save(adminUser);
         }
         alreadySetup = true;
