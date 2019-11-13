@@ -59,9 +59,9 @@ public class UserController {
                     adminUser=u;
                 }
             }
-            if(adminUser!=null) {
+         /*   if(adminUser!=null) {
                 users.remove(adminUser);
-            }
+            }*/
             map.put("users",users);
             return new ResponseEntity<>(map,HttpStatus.OK);
         }

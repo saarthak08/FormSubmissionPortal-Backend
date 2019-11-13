@@ -36,7 +36,7 @@ public class Form {
 
 
     @ManyToMany(mappedBy = "forms")
-    @JsonManagedReference
+    @JsonBackReference
     private List<User> users;
 
 

@@ -33,8 +33,8 @@ public class FormController {
     }
 
 
-    @RequestMapping(value = "/submit-form/{userid}",method = RequestMethod.GET)
-    public ResponseEntity addFormToAUser(@RequestBody Map<String,Object> param,@PathVariable int userid){
+    @GetMapping(value = "/submit-form/{userid}")
+    public ResponseEntity<?> addFormToAUser(@RequestBody Map<String,Object> param,@PathVariable int userid){
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User authUser = (User) auth.getPrincipal();
@@ -64,13 +64,13 @@ public class FormController {
     }
 
 
-    @RequestMapping(value = "/{email}/get-forms",method = RequestMethod.GET)
-    public ResponseEntity getFormsofAUser(@PathVariable String email){
+    @GetMapping(value = "/{email}/get-forms")
+    public ResponseEntity<?> getFormsofAUser(@PathVariable String email){
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User authUser = (User) auth.getPrincipal();
             com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-            if(user.getRole().getUserType()!= UserType.STUDENT){
+            if(user.getRole().getUserType()== UserType.STUDENT){
                 com.sg.fsp.model.User targetUser=userService.findByEmail(email);
                 List<Form> forms=targetUser.getForms();
                 Map<String,Object> res=new HashMap<>();
@@ -96,12 +96,12 @@ public class FormController {
         }
     }
 
-    @RequestMapping(value = "/get-formDetails/{formCode}",method = RequestMethod.GET)
-    public ResponseEntity getAllFormsDetailsofForm(@PathVariable String formCode){
+    @GetMapping(value = "/get-formDetails/{formCode}")
+    public ResponseEntity<?> getAllFormsDetailsofForm(@PathVariable String formCode){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-        if(user.getRole().getUserType()!= UserType.STUDENT){
+        if(user.getRole().getUserType()== UserType.STUDENT){
             Form form=formRepository.findFormByFormCode(formCode);
             if(form!=null) {
                 Map<String, Object> res = new HashMap<>();
@@ -117,12 +117,12 @@ public class FormController {
         }
     }
 
-    @RequestMapping("/get-all-forms")
-    public ResponseEntity getAllForms(){
+    @GetMapping(value = "/get-all-forms")
+    public ResponseEntity<?> getAllForms(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-        if(user.getRole().getUserType()!= UserType.STUDENT){
+        if(user.getRole().getUserType()== UserType.STUDENT){
             List<Form> forms=formRepository.findAll();
             Map<String, Object> res=new HashMap<>();
             res.put("forms",forms);

@@ -81,6 +81,7 @@ public class InitialDataLoader implements
             user.setEmail("fsp_admin@myamu.ac.in");
             user.setRole(adminRole);
             userRepository.save(user);
+            adminUser=userRepository.findByEmail("fsp_admin@myamu.ac.in");
             Form form=new Form();
             form.setDepartment("Computer");
             form.setTitle("Continuation-Form");
