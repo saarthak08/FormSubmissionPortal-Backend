@@ -45,7 +45,7 @@ public class UserController {
         User authUser=(User)auth.getPrincipal();
         com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
         Role role=user.getRole();
-        if(role.getUserType() != UserType.STUDENT){
+        if(role.getUserType() == UserType.STUDENT){
             return ResponseEntity.status(401).build();
         }
         else {

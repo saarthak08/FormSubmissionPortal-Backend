@@ -14,6 +14,7 @@ import java.util.Map;
 
 @Data
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
@@ -44,7 +45,7 @@ public class Form {
     private List<User> users;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "form",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "form",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private FormCheckpoints formCheckpoints;
 
 

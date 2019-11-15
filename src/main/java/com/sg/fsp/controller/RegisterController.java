@@ -128,6 +128,9 @@ public class RegisterController {
         // Find the user associated with the reset token
         User user = userService.findByConfirmationToken(requestParams.get("token"));
 
+        if(user==null){
+            return new ResponseEntity<>("User not found",HttpStatus.NOT_FOUND);
+        }
         // Set new password
         user.setPassword(bCryptPasswordEncoder.encode(requestParams.get("password")));
 

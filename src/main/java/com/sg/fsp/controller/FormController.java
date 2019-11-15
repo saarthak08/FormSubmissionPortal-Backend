@@ -2,9 +2,11 @@ package com.sg.fsp.controller;
 
 import com.sg.fsp.enums.UserType;
 import com.sg.fsp.model.Form;
+import com.sg.fsp.model.FormCheckpoints;
 import com.sg.fsp.model.FormDetail;
 import com.sg.fsp.repository.FormRepository;
 import com.sg.fsp.service.UserService;
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +72,7 @@ public class FormController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User authUser = (User) auth.getPrincipal();
             com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-            if(user.getRole().getUserType()== UserType.STUDENT){
+            if(user.getRole().getUserType()!= UserType.STUDENT){
                 com.sg.fsp.model.User targetUser=userService.findByEmail(email);
                 List<Form> forms=targetUser.getForms();
                 Map<String,Object> res=new HashMap<>();
@@ -101,7 +103,7 @@ public class FormController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-        if(user.getRole().getUserType()== UserType.STUDENT){
+        if(user.getRole().getUserType()!= UserType.STUDENT){
             Form form=formRepository.findFormByFormCode(formCode);
             if(form!=null) {
                 Map<String, Object> res = new HashMap<>();
@@ -123,7 +125,7 @@ public class FormController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-        if(user.getRole().getUserType()== UserType.STUDENT){
+        if(user.getRole().getUserType()!= UserType.STUDENT){
             List<Form> forms=formRepository.findAll();
             Map<String, Object> res=new HashMap<>();
             res.put("forms",forms);
@@ -141,9 +143,12 @@ public class FormController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-        if(user.getRole().getUserType()== UserType.STUDENT){
+        if(user.getRole().getUserType()!= UserType.STUDENT){
             Form form=formRepository.findFormByFormCode(formCode);
             if(form!=null) {
+                for(com.sg.fsp.model.User u:form.getUsers()){
+                    u.setForms(null);
+                }
                 Map<String, Object> res = new HashMap<>();
                 res.put("form", form);
                 res.put("formUsers",form.getUsers());
@@ -157,4 +162,53 @@ public class FormController {
             return ResponseEntity.status(401).build();
         }
     }
+
+
+    @GetMapping("/get-form-checkpoints/{formCode}")
+    public ResponseEntity<?> getFormCheckPoints(@PathVariable String formCode){
+        Form form=formRepository.findFormByFormCode(formCode);
+        if(form==null){
+            return new ResponseEntity<>("Form not found",HttpStatus.NOT_FOUND);
+        }
+        Map<String,Object> res=new HashMap<>();
+        res.put("formCode",form.getFormCode());
+        res.put("formCheckPoint",form.getFormCheckpoints().getCheckPoints());
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @GetMapping("/get-form-checkpoints/{formCode}/{email}")
+    public ResponseEntity<?> getFormCheckpointsForAUserDetail(@PathVariable String formCode,@PathVariable String email){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        Form form=formRepository.findFormByFormCode(formCode);
+        FormCheckpoints formCheckpoints=null;
+        for(FormDetail formDetail:form.getFormDetails()){
+            if(formDetail.getEmail().equals(email)){
+                formCheckpoints=formDetail.getFormCheckpoints();
+            }
+        }
+        if(formCheckpoints!=null){
+            Map<String,Object> res=new HashMap<>();
+            res.put("email",email);
+            res.put("formCode",formCode);
+            res.put("formCheckPointID",formCheckpoints.getId());
+            res.put("formCheckPoints",formCheckpoints.getCheckPoints());
+            if(user.getRole().getUserType()!=UserType.STUDENT){
+                return new ResponseEntity<>(res,HttpStatus.OK);
+            }
+            else{
+                if(email.equals(authUser.getUsername())){
+                    return new ResponseEntity<>(res,HttpStatus.OK);
+                }
+                else{
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                }
+            }
+        }
+        else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
