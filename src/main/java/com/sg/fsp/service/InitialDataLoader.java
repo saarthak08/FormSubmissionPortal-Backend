@@ -15,9 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.ElementCollection;
-import javax.persistence.Query;
 import java.util.*;
 
 @Component
@@ -113,35 +110,17 @@ public class InitialDataLoader implements
 
 
 
-            userStudent=userRepository.findByEmail("student@myamu.ac.in");
             Form form=new Form();
             form.setDepartment("Computer");
             form.setTitle("Continuation-Form");
             form.setFormCode("FORM1");
-            form.addUser(userStudent);
-            userStudent.addForm(form);
-            FormDetail formDetail=new FormDetail();
-            formDetail.setEnrollmentNumber("GI0471");
-            formDetail.setFirstName("STUDENT");
-            formDetail.setLastName("AMU");
-            formDetail.setEmail("student@myamu.ac.in");
-            formDetail.setPhoneNumber("100");
-            formDetail.setFacultyNumber("17COB041");
-            formDetail.setForm(form);
-            form.addFormDetails(formDetail);
-            FormCheckpoints formCheckpoints=new FormCheckpoints();
-            formCheckpoints.setFormDetail(formDetail);
-            formDetail.setFormCheckpoints(formCheckpoints);
-            Map<String, Boolean> checkPoint=new HashMap<>();
-            checkPoint.put(UserType.CONTROLLER.name(),false);
-            checkPoint.put(UserType.DEAN.name(),false);
-            Map<String,String> checkPoints_email=new HashMap<>();
-            checkPoints_email.put(UserType.CONTROLLER.name(),"controller@myamu.ac.in");
-            checkPoints_email.put(UserType.DEAN.name(),"dean@myamu.ac.in");
-            formCheckpoints.setCheckPoints_Emails(checkPoints_email);
-            formCheckpoints.setCheckPoints(checkPoint);
-            form.setFormCheckpoints(formCheckpoints);
-            formCheckpoints.setForm(form);
+            FormCheckpoints userFormCheckpoints =new FormCheckpoints();
+            Map<String, String> checkPoint=new HashMap<>();
+            checkPoint.put(UserType.CONTROLLER.name(),"controller@myamu.ac.in");
+            checkPoint.put(UserType.DEAN.name(),"dean@myamu.ac.in");
+            userFormCheckpoints.setCheckPoints(checkPoint);
+            form.setFormCheckpoints(userFormCheckpoints);
+            userFormCheckpoints.setForm(form);
             formRepository.save(form);
             userRepository.save(userStudent);
 

@@ -5,9 +5,6 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Entity
 @Data
@@ -48,7 +45,7 @@ public class FormDetail {
 
     @JsonIgnore
     @OneToOne(mappedBy = "formDetail",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private FormCheckpoints formCheckpoints;
+    private UserFormCheckpoints userFormCheckpoints;
 
 
 }

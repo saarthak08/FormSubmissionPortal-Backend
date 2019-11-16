@@ -3,14 +3,11 @@ package com.sg.fsp.model;
 
 import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
-import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Entity
@@ -19,7 +16,6 @@ import java.util.Map;
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
 public class Form {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,7 +74,7 @@ public class Form {
     public void updateUser(User user){
         if(users!=null){
             for(User u:users){
-                if(u.getId()==user.getId()){
+                if(u.getId().equals(user.getId())){
                     users.remove(u);
                     users.add(user);
                 }

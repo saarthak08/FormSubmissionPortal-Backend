@@ -2,11 +2,10 @@ package com.sg.fsp.controller;
 
 import com.sg.fsp.enums.UserType;
 import com.sg.fsp.model.Form;
-import com.sg.fsp.model.FormCheckpoints;
+import com.sg.fsp.model.UserFormCheckpoints;
 import com.sg.fsp.model.FormDetail;
 import com.sg.fsp.repository.FormRepository;
 import com.sg.fsp.service.UserService;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,14 +44,46 @@ public class FormController {
                 String formCode = (String)param.get("formCode");
                 Form form = formRepository.findFormByFormCode(formCode);
                 if(form!=null) {
-                    form.addFormDetails((FormDetail)param.get("formDetails"));
+                    FormDetail formDetail=(FormDetail)param.get("formDetails");
+                    form.addFormDetails(formDetail);
+                    Map<String, String> checkPoints=form.getFormCheckpoints().getCheckPoints();
+                    UserFormCheckpoints userFormCheckpoints=new UserFormCheckpoints();
+                    userFormCheckpoints.setFormDetail(formDetail);
+                    Map<String, Boolean> userCheckpointMap=new HashMap<>();
+                    Map<String, String> checkpointsTimestamp=new HashMap<>();
+                    for(Map.Entry<String,String> entry:checkPoints.entrySet()){
+                        userCheckpointMap.put(entry.getKey(),false);
+                        checkpointsTimestamp.put(entry.getKey(),"");
+                    }
+                    userFormCheckpoints.setCheckPoints(userCheckpointMap);
+                    userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
+                    formDetail.setUserFormCheckpoints(userFormCheckpoints);
                     formRepository.save(form);
                     user.addForm(form);
                     userService.saveUser(user);
+                    String entryPoint=null;
+                    String entryPoint_email=null;
+                    Map<String,String> checkpoints=form.getFormCheckpoints().getCheckPoints();
+                  /*  for (Map.Entry<String, String> entry : checkpoints.entrySet()) {
+                        if(!entry.getValue()){
+                            entryPoint=entry.getKey();
+                            break;
+                        }
+                    }
+                    for(Map.Entry<String,String> entry:checkPoints_emails.entrySet()){
+                            if(entry.getKey().equals(entryPoint)){
+                                entryPoint_email=entry.getValue();
+                            }
+                    }*/
+                    com.sg.fsp.model.User entryPointUser=userService.findByEmail(entryPoint_email);
+                    entryPointUser.addForm(form);
+                    form.addUser(entryPointUser);
+                    userService.saveUser(entryPointUser);
+                    formRepository.save(form);
                     return ResponseEntity.ok().build();
                 }
                 else{
-                    return new ResponseEntity<>("No form found!",HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>("No form found!",HttpStatus.NOT_FOUND);
                 }
             }
             else{
@@ -182,19 +213,19 @@ public class FormController {
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
         Form form=formRepository.findFormByFormCode(formCode);
-        FormCheckpoints formCheckpoints=null;
+        UserFormCheckpoints userFormCheckpoints =null;
         com.sg.fsp.model.User user1=userService.findUserById(userid);
         for(FormDetail formDetail:form.getFormDetails()){
             if(user1.getEmail().equals(formDetail.getEmail())){
-                formCheckpoints=formDetail.getFormCheckpoints();
+                userFormCheckpoints =formDetail.getUserFormCheckpoints();
             }
         }
-        if(formCheckpoints!=null){
+        if(userFormCheckpoints !=null){
             Map<String,Object> res=new HashMap<>();
             res.put("email",user1.getEmail());
             res.put("formCode",formCode);
-            res.put("formCheckPointID",formCheckpoints.getId());
-            res.put("formCheckPoints",formCheckpoints.getCheckPoints());
+            res.put("formCheckPointID", userFormCheckpoints.getId());
+            res.put("formCheckPoints", userFormCheckpoints.getCheckPoints());
             if(user.getRole().getUserType()!=UserType.STUDENT){
                 return new ResponseEntity<>(res,HttpStatus.OK);
             }
