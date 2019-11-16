@@ -83,18 +83,48 @@ public class InitialDataLoader implements
             user.setEmail("fsp_admin@myamu.ac.in");
             user.setRole(adminRole);
             userRepository.save(user);
-            adminUser=userRepository.findByEmail("fsp_admin@myamu.ac.in");
+
+            User userStudent=new User();
+            userStudent.setFirstName("STUDENT");
+            userStudent.setLastName("AMU");
+            userStudent.setEnabled(true);
+            userStudent.setPassword(passwordEncoder.encode("ZHCET"));
+            userStudent.setEmail("student@myamu.ac.in");
+            userStudent.setRole(student);
+            userRepository.save(userStudent);
+
+            User userDean=new User();
+            userDean.setFirstName("DEAN");
+            userDean.setLastName("AMU");
+            userDean.setEnabled(true);
+            userDean.setPassword(passwordEncoder.encode("ZHCET"));
+            userDean.setEmail("dean@myamu.ac.in");
+            userDean.setRole(dean);
+            userRepository.save(userDean);
+
+            User userController=new User();
+            userController.setFirstName("CONTROLLER");
+            userController.setLastName("AMU");
+            userController.setEnabled(true);
+            userController.setPassword(passwordEncoder.encode("ZHCET"));
+            userController.setEmail("controller@myamu.ac.in");
+            userController.setRole(controller);
+            userRepository.save(userController);
+
+
+
+            userStudent=userRepository.findByEmail("student@myamu.ac.in");
             Form form=new Form();
             form.setDepartment("Computer");
             form.setTitle("Continuation-Form");
-            form.setFormCode("CONZHCETCE2019");
-            form.addUser(adminUser);
-            adminUser.addForm(form);
+            form.setFormCode("FORM1");
+            form.addUser(userStudent);
+            userStudent.addForm(form);
             FormDetail formDetail=new FormDetail();
             formDetail.setEnrollmentNumber("GI0471");
-            formDetail.setFirstName("ADMIN");
+            formDetail.setFirstName("STUDENT");
             formDetail.setLastName("AMU");
-            formDetail.setEmail("fsp_admin@myamu.ac.in");
+            formDetail.setEmail("student@myamu.ac.in");
             formDetail.setPhoneNumber("100");
             formDetail.setFacultyNumber("17COB041");
             formDetail.setForm(form);
@@ -105,28 +135,17 @@ public class InitialDataLoader implements
             Map<String, Boolean> checkPoint=new HashMap<>();
             checkPoint.put(UserType.CONTROLLER.name(),false);
             checkPoint.put(UserType.DEAN.name(),false);
+            Map<String,String> checkPoints_email=new HashMap<>();
+            checkPoints_email.put(UserType.CONTROLLER.name(),"controller@myamu.ac.in");
+            checkPoints_email.put(UserType.DEAN.name(),"dean@myamu.ac.in");
+            formCheckpoints.setCheckPoints_Emails(checkPoints_email);
             formCheckpoints.setCheckPoints(checkPoint);
             form.setFormCheckpoints(formCheckpoints);
             formCheckpoints.setForm(form);
             formRepository.save(form);
-            userRepository.save(adminUser);
+            userRepository.save(userStudent);
 
-            Form form2=new Form();
-            form2.setDepartment("Electronics");
-            form2.setTitle("Second-Form");
-            form2.setFormCode("FORM2");
-            form2.addUser(adminUser);
-            formDetail.setForm(form2);
-            form2.addFormDetails(formDetail);
-            formCheckpoints=new FormCheckpoints();
-            formCheckpoints.setFormDetail(formDetail);
-            formDetail.setFormCheckpoints(formCheckpoints);
-            formCheckpoints.setCheckPoints(checkPoint);
-            form2.setFormCheckpoints(formCheckpoints);
-            formCheckpoints.setForm(form2);
-            formRepository.save(form2);
-            adminUser.addForm(form2);
-            userRepository.save(adminUser);
+
         }
         alreadySetup = true;
     }

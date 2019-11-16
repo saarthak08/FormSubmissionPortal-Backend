@@ -38,4 +38,20 @@ public class FormCheckpoints implements Serializable {
     @OrderColumn
     Map<String, Boolean> checkPoints=new HashMap<String,Boolean>();
 
+
+    @ElementCollection
+    @CollectionTable(name = "form_checkpoint_email",joinColumns = @JoinColumn(name = "form_checkpoint_id",referencedColumnName = "id"))
+    @Column(name="value")
+    @MapKeyColumn(name = "name")
+    @OrderColumn
+    Map<String, String> checkPoints_Emails=new HashMap<>();
+
+
+    @ElementCollection
+    @CollectionTable(name = "form_checkpoint_timestamp",joinColumns = @JoinColumn(name = "form_checkpoint_id",referencedColumnName = "id"))
+    @Column(name="value")
+    @MapKeyColumn(name = "name")
+    @OrderColumn
+    Map<String, String> checkPoints_Timestamps=new HashMap<>();
+
 }

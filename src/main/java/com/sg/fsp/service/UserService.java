@@ -47,6 +47,10 @@ public class UserService implements UserDetailsService {
        return userRepository.findAll();
     }
 
+    public User findUserById(Long id){
+        return userRepository.findUserById(id);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User applicationUser = userRepository.findByEmail(s);

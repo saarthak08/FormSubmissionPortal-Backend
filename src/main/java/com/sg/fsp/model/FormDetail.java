@@ -41,7 +41,7 @@ public class FormDetail {
     private String enrollmentNumber;
 
 
-    @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
+    @ManyToOne()
     @JoinColumn(name = "form_id")
     private Form form;
 

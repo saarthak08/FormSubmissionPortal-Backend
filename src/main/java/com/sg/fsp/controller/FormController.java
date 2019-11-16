@@ -66,14 +66,14 @@ public class FormController {
     }
 
 
-    @GetMapping(value = "/{email}/get-forms")
-    public ResponseEntity<?> getFormsofAUser(@PathVariable String email){
+    @GetMapping(value = "/get-forms/{userid}")
+    public ResponseEntity<?> getFormsofAUser(@PathVariable Long userid){
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User authUser = (User) auth.getPrincipal();
             com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
             if(user.getRole().getUserType()!= UserType.STUDENT){
-                com.sg.fsp.model.User targetUser=userService.findByEmail(email);
+                com.sg.fsp.model.User targetUser=userService.findUserById(userid);
                 List<Form> forms=targetUser.getForms();
                 Map<String,Object> res=new HashMap<>();
                 res.put("user",targetUser.getEmail());
@@ -81,7 +81,7 @@ public class FormController {
                 return new ResponseEntity<>(res,HttpStatus.OK);
             }
             else {
-                if(email.equals(user.getEmail())){
+                if(userid.equals(user.getId())){
                     List<Form> forms=user.getForms();
                     Map<String,Object> res=new HashMap<>();
                     res.put("user",user.getEmail());
@@ -176,21 +176,22 @@ public class FormController {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
-    @GetMapping("/get-form-checkpoints/{formCode}/{email}")
-    public ResponseEntity<?> getFormCheckpointsForAUserDetail(@PathVariable String formCode,@PathVariable String email){
+    @GetMapping("/get-form-checkpoints/{formCode}/{userid}")
+    public ResponseEntity<?> getFormCheckpointsForAUserDetail(@PathVariable String formCode,@PathVariable Long userid){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
         Form form=formRepository.findFormByFormCode(formCode);
         FormCheckpoints formCheckpoints=null;
+        com.sg.fsp.model.User user1=userService.findUserById(userid);
         for(FormDetail formDetail:form.getFormDetails()){
-            if(formDetail.getEmail().equals(email)){
+            if(user1.getEmail().equals(formDetail.getEmail())){
                 formCheckpoints=formDetail.getFormCheckpoints();
             }
         }
         if(formCheckpoints!=null){
             Map<String,Object> res=new HashMap<>();
-            res.put("email",email);
+            res.put("email",user1.getEmail());
             res.put("formCode",formCode);
             res.put("formCheckPointID",formCheckpoints.getId());
             res.put("formCheckPoints",formCheckpoints.getCheckPoints());
@@ -198,7 +199,7 @@ public class FormController {
                 return new ResponseEntity<>(res,HttpStatus.OK);
             }
             else{
-                if(email.equals(authUser.getUsername())){
+                if(userid.equals(user1.getId())){
                     return new ResponseEntity<>(res,HttpStatus.OK);
                 }
                 else{

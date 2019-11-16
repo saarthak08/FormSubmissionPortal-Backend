@@ -59,7 +59,7 @@ public class User implements Serializable {
     @Column(name = "employee_number")
     private String employeeNumber;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(
@@ -69,7 +69,7 @@ public class User implements Serializable {
     private Role role;
 
 
-    @ManyToMany(cascade=CascadeType.ALL)
+    @ManyToMany
     @JoinTable(
             name = "users_forms",
             joinColumns = @JoinColumn(name = "user_id"),
