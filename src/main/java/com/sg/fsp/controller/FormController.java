@@ -36,65 +36,65 @@ public class FormController {
 
     @GetMapping(value = "/submit-form")
     public ResponseEntity<?> addFormToAUser(@RequestBody Map<String, Object> param) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User authUser = (User) auth.getPrincipal();
-            com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-            String formCode = (String) param.get("formCode");
-            Form form = formRepository.findFormByFormCode(formCode);
-            if (form != null) {
-                Map<String,String> params= (HashMap<String, String>) param.get("formDetails");
-                FormDetail formDetail=new FormDetail();
-                formDetail.setPhoneNumber(params.get("phoneNumber"));
-                formDetail.setEmail(params.get("email"));
-                formDetail.setFacultyNumber(params.get("facultyNumber"));
-                formDetail.setFirstName(params.get("firstName"));
-                formDetail.setLastName(params.get("lastName"));
-                formDetail.setEnrollmentNumber(params.get("enrollmentNumber"));
-                for(FormDetail f:form.getFormDetails()){
-                    if(f.getEmail().equals(formDetail.getEmail())){
-                        return new ResponseEntity<>("Form Already Submitted",HttpStatus.BAD_REQUEST);
-                    }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        String formCode = (String) param.get("formCode");
+        Form form = formRepository.findFormByFormCode(formCode);
+        if (form != null) {
+            Map<String, String> params = (HashMap<String, String>) param.get("formDetails");
+            FormDetail formDetail = new FormDetail();
+            formDetail.setPhoneNumber(params.get("phoneNumber"));
+            formDetail.setEmail(params.get("email"));
+            formDetail.setFacultyNumber(params.get("facultyNumber"));
+            formDetail.setFirstName(params.get("firstName"));
+            formDetail.setLastName(params.get("lastName"));
+            formDetail.setEnrollmentNumber(params.get("enrollmentNumber"));
+            for (FormDetail f : form.getFormDetails()) {
+                if (f.getEmail().equals(formDetail.getEmail())) {
+                    return new ResponseEntity<>("Form Already Submitted", HttpStatus.ALREADY_REPORTED);
                 }
-                form.addFormDetails(formDetail);
-                formDetail.setForm(form);
-                Map<String, String> checkPoints = form.getFormCheckpoints().getCheckPoints();
-                UserFormCheckpoints userFormCheckpoints = new UserFormCheckpoints();
-                userFormCheckpoints.setFormDetail(formDetail);
-                Map<String, Boolean> userCheckpointMap = new HashMap<>();
-                Map<String, String> checkpointsTimestamp = new HashMap<>();
-                for (Map.Entry<String, String> entry : checkPoints.entrySet()) {
-                    userCheckpointMap.put(entry.getKey(), false);
-                    checkpointsTimestamp.put(entry.getKey(), "");
-                }
-                userFormCheckpoints.setCheckPoints(userCheckpointMap);
-                userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
-                formDetail.setUserFormCheckpoints(userFormCheckpoints);
-                formRepository.save(form);
-                user.addForm(form);
-                userService.saveUser(user);
-                String entryPoint = null;
-                String entryPoint_email = null;
-                for (Map.Entry<String, Boolean> entry : userCheckpointMap.entrySet()) {
-                    if (!entry.getValue()) {
-                        entryPoint = entry.getKey();
-                        break;
-                    }
-                }
-                for (Map.Entry<String, String> entry : checkPoints.entrySet()) {
-                    if (entryPoint.equals(entry.getKey())) {
-                        entryPoint_email = entry.getValue();
-                        break;
-                    }
-                }
-                com.sg.fsp.model.User entryPointUser = userService.findByEmail(entryPoint_email);
-                entryPointUser.addForm(form);
-                form.addUser(entryPointUser);
-                userService.saveUser(entryPointUser);
-                formRepository.save(form);
-                return ResponseEntity.ok().body("Form Submitted");
-            } else {
-                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
             }
+            form.addFormDetails(formDetail);
+            formDetail.setForm(form);
+            Map<String, String> checkPoints = form.getFormCheckpoints().getCheckPoints();
+            UserFormCheckpoints userFormCheckpoints = new UserFormCheckpoints();
+            userFormCheckpoints.setFormDetail(formDetail);
+            Map<String, Boolean> userCheckpointMap = new HashMap<>();
+            Map<String, String> checkpointsTimestamp = new HashMap<>();
+            for (Map.Entry<String, String> entry : checkPoints.entrySet()) {
+                userCheckpointMap.put(entry.getKey(), false);
+                checkpointsTimestamp.put(entry.getKey(), "");
+            }
+            userFormCheckpoints.setCheckPoints(userCheckpointMap);
+            userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
+            formDetail.setUserFormCheckpoints(userFormCheckpoints);
+            formRepository.save(form);
+            user.addForm(form);
+            userService.saveUser(user);
+            String entryPoint = null;
+            String entryPoint_email = null;
+            for (Map.Entry<String, Boolean> entry : userCheckpointMap.entrySet()) {
+                if (!entry.getValue()) {
+                    entryPoint = entry.getKey();
+                    break;
+                }
+            }
+            for (Map.Entry<String, String> entry : checkPoints.entrySet()) {
+                if (entryPoint.equals(entry.getKey())) {
+                    entryPoint_email = entry.getValue();
+                    break;
+                }
+            }
+            com.sg.fsp.model.User entryPointUser = userService.findByEmail(entryPoint_email);
+            entryPointUser.addForm(form);
+            form.addUser(entryPointUser);
+            userService.saveUser(entryPointUser);
+            formRepository.save(form);
+            return ResponseEntity.ok().body("Form Submitted");
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
     }
 
 
@@ -232,4 +232,89 @@ public class FormController {
         }
     }
 
+    @GetMapping("/checkForm")
+    public ResponseEntity<?> checkAndSubmitForm(@RequestBody Map<String, String> params) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User reqUser = userService.findByEmail(authUser.getUsername());
+        if (reqUser.getRole().getUserType() != UserType.STUDENT) {
+            String formCode = params.get("formCode");
+            String userid = params.get("userid").toString();
+            String timeStamp = params.get("timestamp");
+            Long userId = Long.parseLong(userid);
+            Form form = formRepository.findFormByFormCode(formCode);
+            com.sg.fsp.model.User user = userService.findUserById(userId);
+            FormDetail res = null;
+            for (FormDetail f : form.getFormDetails()) {
+                if (f.getEmail().equals(user.getEmail())) {
+                    res = f;
+                    break;
+                }
+            }
+            if (res == null) {
+                return new ResponseEntity<>("Form Detail not found!", HttpStatus.NOT_FOUND);
+            }
+            Map<String, Boolean> userCheckpointMap = new HashMap<>();
+            Map<String, String> checkpointsTimestamp = new HashMap<>();
+            Map<String, String> emailCheckpoints = new HashMap<>();
+            String entryRole = null, nextRole = null;
+            String entryEmail = null, nextEmail = null;
+            emailCheckpoints = form.getFormCheckpoints().getCheckPoints();
+            userCheckpointMap = res.getUserFormCheckpoints().getCheckPoints();
+            checkpointsTimestamp = res.getUserFormCheckpoints().getCheckPoints_Timestamps();
+            UserFormCheckpoints userFormCheckpoints = res.getUserFormCheckpoints();
+            for (Map.Entry<String, String> entry : emailCheckpoints.entrySet()) {
+                if (entry.getValue().equals(reqUser.getEmail())) {
+                    entryRole = entry.getKey();
+                    entryEmail = entry.getValue();
+                }
+            }
+            for (Map.Entry<String, Boolean> entry : userCheckpointMap.entrySet()) {
+                if (entryRole.equals(entry.getKey())) {
+                    entry.setValue(true);
+                }
+                if (!entry.getValue()) {
+                    nextRole = entry.getKey();
+                }
+            }
+            for (Map.Entry<String, String> entry : checkpointsTimestamp.entrySet()) {
+                if (entry.getKey().equals(entryRole)) {
+                    entry.setValue(timeStamp);
+                }
+            }
+            if (nextRole != null) {
+                for (Map.Entry<String, String> entry : emailCheckpoints.entrySet()) {
+                    if (entry.getKey().equals(nextRole)) {
+                        nextEmail = entry.getValue();
+                    }
+                }
+                com.sg.fsp.model.User nextUser = userService.findByEmail(nextEmail);
+                for(com.sg.fsp.model.User user1:form.getUsers()){
+                    if(user1.getEmail().equals(nextUser.getEmail())){
+                        return new ResponseEntity<>("Form Already Submitted!",HttpStatus.ALREADY_REPORTED);
+                    }
+                }
+                form.addUser(nextUser);
+                nextUser.addForm(form);
+                userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
+                userFormCheckpoints.setCheckPoints(userCheckpointMap);
+                res.setUserFormCheckpoints(userFormCheckpoints);
+                userService.saveUser(user);
+                formRepository.save(form);
+            }
+            else {
+                userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
+                userFormCheckpoints.setCheckPoints(userCheckpointMap);
+                res.setUserFormCheckpoints(userFormCheckpoints);
+                userService.saveUser(user);
+                formRepository.save(form);
+                return new ResponseEntity<>("Form Submitted!",HttpStatus.OK);
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return ResponseEntity.ok().body("Form checked & forwarded!");
+    }
+
 }
+
