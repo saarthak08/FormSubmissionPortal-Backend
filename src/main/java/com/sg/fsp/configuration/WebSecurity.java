@@ -5,6 +5,7 @@ import com.sg.fsp.security.JWTAuthenticationEntryPoint;
 import com.sg.fsp.security.JWTRequestFilter;
 import com.sg.fsp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -67,7 +68,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers("/api/is-logged-in").permitAll()
                 .and()
                 .authorizeRequests().antMatchers("/api/signup/**").permitAll().
-                // all other requests need to be authenticated
+
+        // all other requests need to be authenticated
                         anyRequest().authenticated().and().
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
@@ -76,8 +78,6 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
-
-
 
 }
 
