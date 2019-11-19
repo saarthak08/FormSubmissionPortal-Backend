@@ -68,7 +68,7 @@ public class InitialDataLoader implements
 
             createRoleIfNotFound(UserType.ADMIN, adminPrivileges);
             Role student = createRoleIfNotFound(UserType.STUDENT, Arrays.asList(submitForm));
-            Role controller = createRoleIfNotFound(UserType.CONTROLLER, Arrays.asList(checkForm, readPrivilege));
+            Role provost = createRoleIfNotFound(UserType.PROVOST, Arrays.asList(checkForm, readPrivilege));
             Role dean = createRoleIfNotFound(UserType.DEAN, Arrays.asList(checkForm, readPrivilege));
 
             Role adminRole = roleRepository.findByUserType(UserType.ADMIN);
@@ -100,12 +100,12 @@ public class InitialDataLoader implements
             userRepository.save(userDean);
 
             User userController=new User();
-            userController.setFirstName("CONTROLLER");
+            userController.setFirstName("PROVOST");
             userController.setLastName("AMU");
             userController.setEnabled(true);
             userController.setPassword(passwordEncoder.encode("ZHCET"));
-            userController.setEmail("controller@myamu.ac.in");
-            userController.setRole(controller);
+            userController.setEmail("provost@myamu.ac.in");
+            userController.setRole(provost);
             userRepository.save(userController);
 
 
@@ -116,7 +116,7 @@ public class InitialDataLoader implements
             form.setFormCode("FORM1");
             FormCheckpoints userFormCheckpoints =new FormCheckpoints();
             Map<String, String> checkPoint=new HashMap<>();
-            checkPoint.put(UserType.CONTROLLER.name(),"controller@myamu.ac.in");
+            checkPoint.put(UserType.PROVOST.name(),"provost@myamu.ac.in");
             checkPoint.put(UserType.DEAN.name(),"dean@myamu.ac.in");
             userFormCheckpoints.setCheckPoints(checkPoint);
             form.setFormCheckpoints(userFormCheckpoints);

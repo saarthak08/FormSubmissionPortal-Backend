@@ -53,11 +53,7 @@ public class User implements Serializable {
     private String confirmationToken;
 
     @Column(name="faculty_number")
-    private String facultyNumber;
-
-
-    @Column(name = "employee_number")
-    private String employeeNumber;
+    private String idNumber;
 
     @ManyToOne
     @JoinTable(

@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,9 +53,10 @@ public class RegisterController {
 
     // Process form input data
     @ResponseBody
-    @RequestMapping(value = "/register", method = RequestMethod.POST,consumes = "application/json")
-    public ResponseEntity<String> processRegistrationForm(@Valid @RequestBody Map<String, String> user, HttpServletRequest request) {
+    @RequestMapping(value = "/register", method = RequestMethod.POST,consumes = "application/json",produces = "application/json")
+    public ResponseEntity<?> processRegistrationForm(@Valid @RequestBody Map<String, String> user, HttpServletRequest request) {
 
+        Map<String, String> res=new HashMap<>();
         // Lookup user in database by e-mail
         User userExists = userService.findByEmail(user.get("email"));
 
@@ -62,18 +64,21 @@ public class RegisterController {
         System.out.println(userExists);
 
         if (userExists != null&&userExists.isEnabled()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "User Already Exists");
+            res.put("message","Error! User Exists");
+            return new ResponseEntity<>(res,
+                    HttpStatus.BAD_REQUEST);
         }
         else if(userExists!=null&& !userExists.isEnabled()){
-            sendConfirmationMail(userExists,request,false);
-            return new ResponseEntity<>("Confirmation email sent!",HttpStatus.OK);
+            sendConfirmationMail(userExists,request);
+            res.put("message","Confirmation Link Sent Again!");
+            return new ResponseEntity<>(res,HttpStatus.OK);
         }
         else {
             userExists=new User();
             userExists.setLastName(user.get("lastName"));
             userExists.setFirstName(user.get("firstName"));
             userExists.setEmail(user.get("email"));
+            userExists.setIdNumber(user.get("idNumber"));
             String role=user.get("role");
             Role role1;
             if(role.equals("STUDENT")){
@@ -81,16 +86,17 @@ public class RegisterController {
             } else if (role.equals("DEAN")){
                 role1=roleRepository.findByUserType(UserType.DEAN);
             } else{
-                role1=roleRepository.findByUserType(UserType.CONTROLLER);
+                role1=roleRepository.findByUserType(UserType.PROVOST);
             }
             userExists.setRole(role1);
-            sendConfirmationMail(userExists,request,true);
+            sendConfirmationMail(userExists,request);
         }
-        return new ResponseEntity<>("User created & confirmation email sent!",HttpStatus.OK);
+        res.put("message","User created & confirmation link sent!");
+        return new ResponseEntity<>(res,HttpStatus.OK);
     }
 
 
-    private void sendConfirmationMail(User user, HttpServletRequest request,boolean x){
+    private void sendConfirmationMail(User user, HttpServletRequest request){
         // new user so we create user and send confirmation e-mail
 
         // Disable user until they click on confirmation link in email
@@ -98,9 +104,7 @@ public class RegisterController {
 
         // Generate random 36-character string token for confirmation link
         user.setConfirmationToken(UUID.randomUUID().toString());
-        if(x) {
-            userService.saveUser(user);
-        }
+        userService.saveUser(user);
 
         String appUrl = request.getScheme() + "://" + request.getServerName()+":8080";
 
@@ -146,7 +150,7 @@ public class RegisterController {
 
             redir.addFlashAttribute("errorMessage", "Your password is too weak.  Choose a stronger one.");
 
-            modelAndView.setViewName("redirect:confirm?token=" + requestParams.get("token"));
+            modelAndView.setViewName("redirect:/api/signup/confirm?token=" + requestParams.get("token"));
             return modelAndView;
         }
 
@@ -155,12 +159,12 @@ public class RegisterController {
 
         if(user==null){
             redir.addFlashAttribute("errorMessage", "Link expired or Wrong link!");
-            modelAndView.setViewName("redirect:confirm?token=" + requestParams.get("token"));
+            modelAndView.setViewName("redirect:/api/signup/confirm?token=" + requestParams.get("token"));
             return modelAndView;
         }
         if(user.isEnabled()){
             redir.addFlashAttribute("errorMessage", "Link expired or Wrong link!");
-            modelAndView.setViewName("redirect:confirm?token=" + requestParams.get("token"));
+            modelAndView.setViewName("redirect:/api/signup/confirm?token=" + requestParams.get("token"));
             return modelAndView;
         }
         // Set new password
