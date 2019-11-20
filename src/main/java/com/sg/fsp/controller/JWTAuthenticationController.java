@@ -13,12 +13,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.Map;
 
 /*
@@ -46,26 +49,17 @@ public class JWTAuthenticationController {
 
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JWTRequest authenticationRequest) {
-        try {
-            authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-        }
-        catch (Exception e){
-            Map<String, String> res=new HashMap<>();
-            res.put("message",e.getMessage());
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JWTRequest authenticationRequest) throws Exception {
+        authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         final UserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
         User user=userDetailsService.findByEmail(authenticationRequest.getUsername());
         if(user!=null&!user.isEnabled()){
-            Map<String, String> res=new HashMap<>();
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            throw new ResponseStatusException( HttpStatus.UNAUTHORIZED,"User not enabled");
         }
         User resUser=userDetailsService.findByEmail(authenticationRequest.getUsername());
         final String token = jwtTokenUtil.generateToken(userDetails);
-        return new ResponseEntity<>(new JWTResponse(token,resUser),HttpStatus.OK);
+        return ResponseEntity.ok(new JWTResponse(token,resUser));
     }
 
 
@@ -73,9 +67,9 @@ public class JWTAuthenticationController {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED");
+            throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS");
+            throw new Exception("INVALID_CREDENTIALS", e);
         }
     }
 
@@ -84,7 +78,6 @@ public class JWTAuthenticationController {
         final String requestTokenHeader = request.getHeader("Authorization");
         String username = null;
         String jwtToken = null;
-        Map<String, String> res=new HashMap<>();
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
@@ -92,26 +85,20 @@ public class JWTAuthenticationController {
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
-                res.put("message","Unable to get JWT Token");
-                return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("Unable to get JWT Token", HttpStatus.UNAUTHORIZED);
             } catch (ExpiredJwtException e) {
-                res.put("message","JWT Token has expired");
-                return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("JWT Token has expired", HttpStatus.UNAUTHORIZED);
             }
         } else {
-            res.put("message","JWT Token does not begin with Bearer String");
-            return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("JWT Token does not begin with Bearer String", HttpStatus.UNAUTHORIZED);
         }
         if (username != null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-                res.put("message","OK");
-                return ResponseEntity.ok().body(res);
+                return ResponseEntity.ok().build();
             }
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(401).build();
         }
-        res.put("message","OK");
-        return ResponseEntity.ok().body(res);
+        return ResponseEntity.ok().build();
     }
 }

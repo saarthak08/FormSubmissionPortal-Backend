@@ -52,9 +52,7 @@ public class FormController {
             formDetail.setEnrollmentNumber(params.get("enrollmentNumber"));
             for (FormDetail f : form.getFormDetails()) {
                 if (f.getEmail().equals(formDetail.getEmail())) {
-                    Map<String,String> res=new HashMap<>();
-                    res.put("message","Form Already Submitter");
-                    return new ResponseEntity<>(res, HttpStatus.ALREADY_REPORTED);
+                    return new ResponseEntity<>("Form Already Submitted", HttpStatus.ALREADY_REPORTED);
                 }
             }
             form.addFormDetails(formDetail);
@@ -93,13 +91,9 @@ public class FormController {
             form.addUser(entryPointUser);
             userService.saveUser(entryPointUser);
             formRepository.save(form);
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Form Submitted");
-            return ResponseEntity.ok().body(res);
+            return ResponseEntity.ok().body("Form Submitted");
         } else {
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -125,9 +119,7 @@ public class FormController {
                     res.put("forms", forms);
                     return new ResponseEntity<>(res, HttpStatus.OK);
                 } else {
-                    Map<String, String> res=new HashMap<>();
-                    res.put("message","Unauthorized/Access Denied");
-                    return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity(HttpStatus.UNAUTHORIZED);
                 }
             }
         } catch (Exception e) {
@@ -143,19 +135,15 @@ public class FormController {
         if (user.getRole().getUserType() != UserType.STUDENT) {
             Form form = formRepository.findFormByFormCode(formCode);
             if (form != null) {
-                Map<String, Object> resp = new HashMap<>();
-                resp.put("form", form);
-                resp.put("formDetails", form.getFormDetails());
-                return new ResponseEntity<>(resp, HttpStatus.OK);
+                Map<String, Object> res = new HashMap<>();
+                res.put("form", form);
+                res.put("formDetails", form.getFormDetails());
+                return new ResponseEntity<>(res, HttpStatus.OK);
             } else {
-                Map<String,String> res=new HashMap<>();
-                res.put("message","Bad Request");
-                return ResponseEntity.status(405).body(res);
+                return ResponseEntity.status(405).build();
             }
         } else {
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(401).build();
         }
     }
 
@@ -166,13 +154,11 @@ public class FormController {
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
         if (user.getRole().getUserType() != UserType.STUDENT) {
             List<Form> forms = formRepository.findAll();
-            Map<String, Object> resp = new HashMap<>();
-            resp.put("forms", forms);
-            return new ResponseEntity<>(resp, HttpStatus.OK);
+            Map<String, Object> res = new HashMap<>();
+            res.put("forms", forms);
+            return new ResponseEntity<>(res, HttpStatus.OK);
         } else {
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -196,9 +182,7 @@ public class FormController {
                 return ResponseEntity.status(405).build();
             }
         } else {
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(401).build();
         }
     }
 
@@ -207,9 +191,7 @@ public class FormController {
     public ResponseEntity<?> getFormCheckPoints(@PathVariable String formCode) {
         Form form = formRepository.findFormByFormCode(formCode);
         if (form == null) {
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Form not found.");
-            return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Form not found", HttpStatus.NOT_FOUND);
         }
         Map<String, Object> res = new HashMap<>();
         res.put("formCode", form.getFormCode());
@@ -242,15 +224,11 @@ public class FormController {
                 if (userid.equals(user1.getId())) {
                     return new ResponseEntity<>(res, HttpStatus.OK);
                 } else {
-                    Map<String,String> resp=new HashMap<>();
-                    res.put("message","Unauthorized/Access Denied");
-                    return new ResponseEntity<>(resp,HttpStatus.UNAUTHORIZED);
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
         } else {
-            Map<String,String> res=new HashMap<>();
-            res.put("message","Not Found!");
-            return new ResponseEntity<>(res,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -274,9 +252,7 @@ public class FormController {
                 }
             }
             if (res == null) {
-                Map<String,String> resp=new HashMap<>();
-                resp.put("message","Form detail not found!");
-                return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Form Detail not found!", HttpStatus.NOT_FOUND);
             }
             Map<String, Boolean> userCheckpointMap = new HashMap<>();
             Map<String, String> checkpointsTimestamp = new HashMap<>();
@@ -315,9 +291,7 @@ public class FormController {
                 com.sg.fsp.model.User nextUser = userService.findByEmail(nextEmail);
                 for(com.sg.fsp.model.User user1:form.getUsers()){
                     if(user1.getEmail().equals(nextUser.getEmail())){
-                        Map<String,String> resp=new HashMap<>();
-                        resp.put("message","Form Already Submitted!");
-                        return new ResponseEntity<>(resp,HttpStatus.ALREADY_REPORTED);
+                        return new ResponseEntity<>("Form Already Submitted!",HttpStatus.ALREADY_REPORTED);
                     }
                 }
                 form.addUser(nextUser);
@@ -334,18 +308,12 @@ public class FormController {
                 res.setUserFormCheckpoints(userFormCheckpoints);
                 userService.saveUser(user);
                 formRepository.save(form);
-                Map<String,String> resp=new HashMap<>();
-                resp.put("message","Form Submitted!");
-                return new ResponseEntity<>(resp,HttpStatus.OK);
+                return new ResponseEntity<>("Form Submitted!",HttpStatus.OK);
             }
         } else {
-            HashMap<String,String> res=new HashMap<>();
-            res.put("message","Unauthorized/Access Denied");
-            return new ResponseEntity<>(res,HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        Map<String,String> res=new HashMap<>();
-        res.put("message","Form checked & forwarded!");
-        return ResponseEntity.ok().body(res);
+        return ResponseEntity.ok().body("Form checked & forwarded!");
     }
 
 }
