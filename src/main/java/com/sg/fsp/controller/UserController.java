@@ -27,41 +27,42 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    public UserController(UserService userService){
-        this.userService=userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/user/info")
-    public ResponseEntity<?> getUserInfo(){
+    public ResponseEntity<?> getUserInfo() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User authUser=(User)auth.getPrincipal();
-        com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() throws java.lang.Exception, NullPointerException{
+    public ResponseEntity<?> getAllUsers() throws java.lang.Exception, NullPointerException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User authUser=(User)auth.getPrincipal();
-        com.sg.fsp.model.User user=userService.findByEmail(authUser.getUsername());
-        Role role=user.getRole();
-        if(role.getUserType() == UserType.STUDENT){
-            return ResponseEntity.status(401).build();
-        }
-        else {
-            com.sg.fsp.model.User adminUser=null;
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        Role role = user.getRole();
+        if (role.getUserType() == UserType.STUDENT) {
+            Map<String, String> res=new HashMap<>();
+            res.put("message","Unauthorized/Access Denied");
+            return ResponseEntity.status(401).body(res);
+        } else {
+            com.sg.fsp.model.User adminUser = null;
             List<com.sg.fsp.model.User> users = userService.getAllUsers();
-            Map<String,List<com.sg.fsp.model.User>> map=new HashMap<>();
-            for(com.sg.fsp.model.User u:users){
-                if(u.getEmail().equals("fsp_admin@myamu.ac.in")){
-                    adminUser=u;
+            Map<String, List<com.sg.fsp.model.User>> map = new HashMap<>();
+            for (com.sg.fsp.model.User u : users) {
+                if (u.getEmail().equals("fsp_admin@myamu.ac.in")) {
+                    adminUser = u;
                 }
             }
-         /*   if(adminUser!=null) {
+            if (adminUser != null) {
                 users.remove(adminUser);
-            }*/
-            map.put("users",users);
-            return new ResponseEntity<>(map,HttpStatus.OK);
+            }
+            map.put("users", users);
+            return new ResponseEntity<>(map, HttpStatus.OK);
         }
     }
 }
