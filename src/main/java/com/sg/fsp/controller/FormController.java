@@ -256,6 +256,41 @@ public class FormController {
         }
     }
 
+
+    @GetMapping("/get-form-timestamps/{formCode}/{userid}")
+    public ResponseEntity<?> getFormTimestampsForAUserDetail(@PathVariable String formCode, @PathVariable Long userid) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        Form form = formRepository.findFormByFormCode(formCode);
+        UserFormCheckpoints userFormCheckpoints = null;
+        com.sg.fsp.model.User user1 = userService.findUserById(userid);
+        for (FormDetail formDetail : form.getFormDetails()) {
+            if (user1.getEmail().equals(formDetail.getEmail())) {
+                userFormCheckpoints = formDetail.getUserFormCheckpoints();
+            }
+        }
+        if (userFormCheckpoints != null) {
+            Map<String, Object> res = new HashMap<>();
+            res.put("email", user1.getEmail());
+            res.put("formCode", formCode);
+            res.put("formCheckPointID", userFormCheckpoints.getId());
+            res.put("formTimestamps", userFormCheckpoints.getCheckPoints_Timestamps());
+            if (user.getRole().getUserType() != UserType.STUDENT) {
+                return new ResponseEntity<>(res, HttpStatus.OK);
+            } else {
+                if (userid.equals(user1.getId())) {
+                    return new ResponseEntity<>(res, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                }
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
     @GetMapping("/checkForm")
     public ResponseEntity<?> checkAndSubmitForm(@RequestBody Map<String, String> params) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
