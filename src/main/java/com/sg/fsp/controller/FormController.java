@@ -127,7 +127,7 @@ public class FormController {
         }
     }
 
-    @GetMapping(value = "/get-formDetails/{formCode}")
+    @GetMapping(value = "/get-all-formDetails/{formCode}")
     public ResponseEntity<?> getAllFormsDetailsofForm(@PathVariable String formCode) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
@@ -147,15 +147,43 @@ public class FormController {
         }
     }
 
+
+    @GetMapping(value = "/get-formDetails/{formCode}")
+    public ResponseEntity<?> getFormsDetailsofForm(@PathVariable String formCode) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        Form form = formRepository.findFormByFormCode(formCode);
+        FormDetail formDetail=null;
+        if (form != null) {
+            for (FormDetail detail : form.getFormDetails()) {
+                if (detail.getEmail().equals(user.getEmail())) {
+                    formDetail = detail;
+                    break;
+                }
+            }
+            Map<String, Object> res = new HashMap<>();
+            formDetail.setForm(null);
+            if(formDetail==null){
+                return ResponseEntity.status(405).build();
+            }
+            res.put("formDetail", formDetail);
+            return new ResponseEntity<>(res, HttpStatus.OK);
+        }
+        else{
+            return ResponseEntity.status(405).build();
+        }
+    }
+
     @GetMapping(value = "/get-all-forms")
     public ResponseEntity<?> getAllForms() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-            List<Form> forms = formRepository.findAll();
-            Map<String, Object> res = new HashMap<>();
-            res.put("forms", forms);
-            return new ResponseEntity<>(res, HttpStatus.OK);
+        List<Form> forms = formRepository.findAll();
+        Map<String, Object> res = new HashMap<>();
+        res.put("forms", forms);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
 
@@ -285,9 +313,9 @@ public class FormController {
                     }
                 }
                 com.sg.fsp.model.User nextUser = userService.findByEmail(nextEmail);
-                for(com.sg.fsp.model.User user1:form.getUsers()){
-                    if(user1.getEmail().equals(nextUser.getEmail())){
-                        return new ResponseEntity<>("Form Already Submitted!",HttpStatus.ALREADY_REPORTED);
+                for (com.sg.fsp.model.User user1 : form.getUsers()) {
+                    if (user1.getEmail().equals(nextUser.getEmail())) {
+                        return new ResponseEntity<>("Form Already Submitted!", HttpStatus.ALREADY_REPORTED);
                     }
                 }
                 form.addUser(nextUser);
@@ -297,14 +325,13 @@ public class FormController {
                 res.setUserFormCheckpoints(userFormCheckpoints);
                 userService.saveUser(user);
                 formRepository.save(form);
-            }
-            else {
+            } else {
                 userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
                 userFormCheckpoints.setCheckPoints(userCheckpointMap);
                 res.setUserFormCheckpoints(userFormCheckpoints);
                 userService.saveUser(user);
                 formRepository.save(form);
-                return new ResponseEntity<>("Form Submitted!",HttpStatus.OK);
+                return new ResponseEntity<>("Form Submitted!", HttpStatus.OK);
             }
         } else {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
