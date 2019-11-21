@@ -152,14 +152,10 @@ public class FormController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
-        if (user.getRole().getUserType() != UserType.STUDENT) {
             List<Form> forms = formRepository.findAll();
             Map<String, Object> res = new HashMap<>();
             res.put("forms", forms);
             return new ResponseEntity<>(res, HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-        }
     }
 
 

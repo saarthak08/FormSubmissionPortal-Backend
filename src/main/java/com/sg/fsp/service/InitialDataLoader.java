@@ -109,7 +109,6 @@ public class InitialDataLoader implements
             userRepository.save(userController);
 
 
-
             Form form=new Form();
             form.setDepartment("Computer");
             form.setTitle("Continuation-Form");
