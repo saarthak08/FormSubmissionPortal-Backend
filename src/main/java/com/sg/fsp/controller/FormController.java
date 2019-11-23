@@ -34,7 +34,7 @@ public class FormController {
     }
 
 
-    @GetMapping(value = "/submit-form")
+    @PostMapping(value = "/submit-form")
     public ResponseEntity<?> addFormToAUser(@RequestBody Map<String, Object> param) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
@@ -186,6 +186,46 @@ public class FormController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    @GetMapping(value="/checkFormStatus/{formCode}/{userid}")
+    public ResponseEntity<?> getFormStatus(@PathVariable String formCode,@PathVariable Long userid){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User authUser = (User) auth.getPrincipal();
+        com.sg.fsp.model.User user = userService.findByEmail(authUser.getUsername());
+        com.sg.fsp.model.User reqUser=userService.findUserById(userid);
+        Form form=formRepository.findFormByFormCode(formCode);
+        if(form==null){
+            return new ResponseEntity<>("No form found!",HttpStatus.NOT_FOUND);
+        }
+        FormDetail res=null;
+        for(FormDetail temp:form.getFormDetails()){
+            if(temp.getEmail().equals(reqUser.getEmail())){
+                res=temp;
+            }
+        }
+        if(res==null){
+            return new ResponseEntity<>("No form detail found!",HttpStatus.NOT_FOUND);
+        }
+        if(reqUser.getEmail().equals(user.getEmail())){
+            Map<String,Object> response=new HashMap<>();
+            response.put("formCode",form.getFormCode());
+            response.put("userEmail",res.getEmail());
+            response.put("formDetailStatus",res.isStatus());
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
+        else{
+            if(user.getRole().getUserType()!=UserType.STUDENT){
+                Map<String,Object> response=new HashMap<>();
+                response.put("formCode",form.getFormCode());
+                response.put("userEmail",res.getEmail());
+                response.put("formDetailStatus",res.isStatus());
+                return new ResponseEntity<>(response,HttpStatus.OK);
+            }
+            else{
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+        }
+    }
+
 
     @GetMapping(value = "/get-form-users/{formCode}")
     public ResponseEntity<?> getAllUsersofForm(@PathVariable String formCode) {
@@ -291,18 +331,18 @@ public class FormController {
     }
 
 
-    @GetMapping("/checkForm")
+    @PostMapping("/checkForm")
     public ResponseEntity<?> checkAndSubmitForm(@RequestBody Map<String, String> params) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User authUser = (User) auth.getPrincipal();
         com.sg.fsp.model.User reqUser = userService.findByEmail(authUser.getUsername());
         if (reqUser.getRole().getUserType() != UserType.STUDENT) {
             String formCode = params.get("formCode");
-            String userid = params.get("userid").toString();
+            boolean status = Boolean.parseBoolean(params.get("formStatus"));
+            String email = params.get("email").toString();
             String timeStamp = params.get("timestamp");
-            Long userId = Long.parseLong(userid);
             Form form = formRepository.findFormByFormCode(formCode);
-            com.sg.fsp.model.User user = userService.findUserById(userId);
+            com.sg.fsp.model.User user = userService.findByEmail(email);
             FormDetail res = null;
             for (FormDetail f : form.getFormDetails()) {
                 if (f.getEmail().equals(user.getEmail())) {
@@ -312,6 +352,14 @@ public class FormController {
             }
             if (res == null) {
                 return new ResponseEntity<>("Form Detail not found!", HttpStatus.NOT_FOUND);
+            }
+            if(!res.isStatus()){
+                return new ResponseEntity<>("Form status is rejected!", HttpStatus.BAD_REQUEST);
+            }
+            if(!status){
+                res.setStatus(false);
+                formRepository.save(form);
+                return new ResponseEntity<>("Form rejected!", HttpStatus.OK);
             }
             Map<String, Boolean> userCheckpointMap = new HashMap<>();
             Map<String, String> checkpointsTimestamp = new HashMap<>();

@@ -19,6 +19,10 @@ public class FormDetail {
     private Long id;
 
 
+    @Column(columnDefinition = "BOOLEAN DEFAULT true",nullable = false)
+    private boolean status=true;
+
+
     @NotEmpty
     private String firstName;
 
