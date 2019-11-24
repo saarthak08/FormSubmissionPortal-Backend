@@ -51,7 +51,7 @@ public class FormController {
             if(reqUser==null){
                 return new ResponseEntity<>("Invalid form data",HttpStatus.BAD_REQUEST);
             }
-            else if(!(reqUser.getEmail().equals(user.getEmail())&&reqUser.getFirstName().equals(user.getFirstName())&&reqUser.getLastName().equals(user.getLastName())&&reqUser.getIdNumber().equals(user.getIdNumber()))) {
+            else if(!(reqUser.getEmail().equals(user.getEmail())&&reqUser.getFirstName().equals(user.getFirstName())&&reqUser.getLastName().equals(user.getLastName()))) {
                 return new ResponseEntity<>("Invalid form data",HttpStatus.BAD_REQUEST);
             }
             formDetail.setFacultyNumber(params.get("facultyNumber"));
