@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,13 @@ public class FormController {
             FormDetail formDetail = new FormDetail();
             formDetail.setPhoneNumber(params.get("phoneNumber"));
             formDetail.setEmail(params.get("email"));
+            com.sg.fsp.model.User reqUser=userService.findByEmail(params.get("email"));
+            if(reqUser==null){
+                return new ResponseEntity<>("Invalid form data",HttpStatus.BAD_REQUEST);
+            }
+            else if(!(reqUser.getEmail().equals(user.getEmail())&&reqUser.getFirstName().equals(user.getFirstName())&&reqUser.getLastName().equals(user.getLastName())&&reqUser.getIdNumber().equals(user.getIdNumber()))) {
+                return new ResponseEntity<>("Invalid form data",HttpStatus.BAD_REQUEST);
+            }
             formDetail.setFacultyNumber(params.get("facultyNumber"));
             formDetail.setFirstName(params.get("firstName"));
             formDetail.setLastName(params.get("lastName"));
@@ -235,12 +243,16 @@ public class FormController {
         if (user.getRole().getUserType() != UserType.STUDENT) {
             Form form = formRepository.findFormByFormCode(formCode);
             if (form != null) {
+                ArrayList<com.sg.fsp.model.User> resUser=new ArrayList<>();
                 for (com.sg.fsp.model.User u : form.getUsers()) {
-                    u.setForms(null);
+                    if(u.getRole().getUserType()==UserType.STUDENT){
+                        u.setForms(null);
+                        resUser.add(u);
+                    }
                 }
                 Map<String, Object> res = new HashMap<>();
                 res.put("form", form);
-                res.put("formUsers", form.getUsers());
+                res.put("formUsers", resUser);
                 return new ResponseEntity<>(res, HttpStatus.OK);
             } else {
                 return ResponseEntity.status(405).build();

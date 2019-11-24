@@ -52,7 +52,7 @@ public class User implements Serializable {
     @JsonIgnore
     private String confirmationToken;
 
-    @Column(name="faculty_number")
+    @Column(name="id_number")
     private String idNumber;
 
     @ManyToOne
