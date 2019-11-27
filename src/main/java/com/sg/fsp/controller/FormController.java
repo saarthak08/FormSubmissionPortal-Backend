@@ -96,7 +96,7 @@ public class FormController {
             }
             boolean flag=false;
             com.sg.fsp.model.User entryPointUser = userService.findByEmail(entryPoint_email);
-            for(Form f:user.getForms()){
+            for(Form f:entryPointUser.getForms()){
                 if(f==form){
                     flag=true;
                 }
