@@ -52,7 +52,7 @@ public class FormController {
                 return new ResponseEntity<>("Invalid form data",HttpStatus.BAD_REQUEST);
             }
             else if(!(reqUser.getEmail().equals(user.getEmail())&&reqUser.getFirstName().equals(user.getFirstName())&&reqUser.getLastName().equals(user.getLastName()))) {
-                return new ResponseEntity<>("Invalid form data",HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("Invalid form data || Not Equal",HttpStatus.BAD_REQUEST);
             }
             formDetail.setFacultyNumber(params.get("facultyNumber"));
             formDetail.setFirstName(params.get("firstName"));
@@ -94,11 +94,19 @@ public class FormController {
                     break;
                 }
             }
+            boolean flag=false;
             com.sg.fsp.model.User entryPointUser = userService.findByEmail(entryPoint_email);
-            entryPointUser.addForm(form);
-            form.addUser(entryPointUser);
-            userService.saveUser(entryPointUser);
-            formRepository.save(form);
+            for(Form f:user.getForms()){
+                if(f==form){
+                    flag=true;
+                }
+            }
+            if(!flag) {
+                entryPointUser.addForm(form);
+                form.addUser(entryPointUser);
+                userService.saveUser(entryPointUser);
+                formRepository.save(form);
+            }
             return ResponseEntity.ok().body("Form Submitted");
         } else {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
@@ -413,8 +421,16 @@ public class FormController {
                         return new ResponseEntity<>("Form Already Submitted!", HttpStatus.ALREADY_REPORTED);
                     }
                 }
-                form.addUser(nextUser);
-                nextUser.addForm(form);
+                boolean flag=false;
+                for(Form f:nextUser.getForms()){
+                    if(f==form){
+                        flag=true;
+                    }
+                }
+                if(!flag) {
+                    form.addUser(nextUser);
+                    nextUser.addForm(form);
+                }
                 userFormCheckpoints.setCheckPoints_Timestamps(checkpointsTimestamp);
                 userFormCheckpoints.setCheckPoints(userCheckpointMap);
                 res.setUserFormCheckpoints(userFormCheckpoints);
