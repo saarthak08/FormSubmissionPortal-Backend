@@ -30,12 +30,12 @@ public class InitialDataLoader implements
 
 
     @Autowired
-    public InitialDataLoader(UserRepository userRepository, RoleRepository roleRepository,PrivilegeRepository privilegeRepository, PasswordEncoder passwordEncoder, FormRepository formRepository){
-        this.userRepository=userRepository;
-        this.roleRepository=roleRepository;
-        this.privilegeRepository=privilegeRepository;
-        this.passwordEncoder=passwordEncoder;
-        this.formRepository=formRepository;
+    public InitialDataLoader(UserRepository userRepository, RoleRepository roleRepository, PrivilegeRepository privilegeRepository, PasswordEncoder passwordEncoder, FormRepository formRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.privilegeRepository = privilegeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.formRepository = formRepository;
     }
 
     @Override
@@ -43,12 +43,12 @@ public class InitialDataLoader implements
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
 
-        if (alreadySetup){
+        if (alreadySetup) {
             return;
         }
 
-        User adminUser=userRepository.findByEmail("fsp_admin@myamu.ac.in");
-        if(adminUser==null) {
+        User adminUser = userRepository.findByEmail("fsp_admin@myamu.ac.in");
+        if (adminUser == null) {
             Privilege readPrivilege
                     = createPrivilegeIfNotFound(Permission.READ_USERS);
             Privilege writePrivilege
@@ -60,7 +60,7 @@ public class InitialDataLoader implements
             Privilege enableUser
                     = createPrivilegeIfNotFound(Permission.ENABLE_USER);
             Privilege addForm
-                    =createPrivilegeIfNotFound(Permission.ADD_FORM);
+                    = createPrivilegeIfNotFound(Permission.ADD_FORM);
 
 
             List<Privilege> adminPrivileges = Arrays.asList(
@@ -81,7 +81,7 @@ public class InitialDataLoader implements
             user.setRole(adminRole);
             userRepository.save(user);
 
-            User userStudent=new User();
+            User userStudent = new User();
             userStudent.setFirstName("STUDENT");
             userStudent.setLastName("AMU");
             userStudent.setEnabled(true);
@@ -90,7 +90,7 @@ public class InitialDataLoader implements
             userStudent.setRole(student);
             userRepository.save(userStudent);
 
-            User userDean=new User();
+            User userDean = new User();
             userDean.setFirstName("DEAN");
             userDean.setLastName("AMU");
             userDean.setEnabled(true);
@@ -99,7 +99,7 @@ public class InitialDataLoader implements
             userDean.setRole(dean);
             userRepository.save(userDean);
 
-            User userController=new User();
+            User userController = new User();
             userController.setFirstName("PROVOST");
             userController.setLastName("AMU");
             userController.setEnabled(true);
@@ -109,14 +109,14 @@ public class InitialDataLoader implements
             userRepository.save(userController);
 
 
-            Form form=new Form();
+            Form form = new Form();
             form.setDepartment("Computer");
             form.setTitle("Continuation-Form");
             form.setFormCode("FORM1");
-            FormCheckpoints userFormCheckpoints =new FormCheckpoints();
-            Map<String, String> checkPoint=new HashMap<>();
-            checkPoint.put(UserType.PROVOST.name(),"provost@myamu.ac.in");
-            checkPoint.put(UserType.DEAN.name(),"dean@myamu.ac.in");
+            FormCheckpoints userFormCheckpoints = new FormCheckpoints();
+            Map<String, String> checkPoint = new HashMap<>();
+            checkPoint.put(UserType.PROVOST.name(), "provost@myamu.ac.in");
+            checkPoint.put(UserType.DEAN.name(), "dean@myamu.ac.in");
             userFormCheckpoints.setCheckPoints(checkPoint);
             form.setFormCheckpoints(userFormCheckpoints);
             userFormCheckpoints.setForm(form);
