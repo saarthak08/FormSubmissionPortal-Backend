@@ -112,45 +112,43 @@ public class RegisterController {
         registrationEmail.setTo(user.getEmail());
         registrationEmail.setSubject("Registration Confirmation");
         registrationEmail.setText("To confirm your e-mail address, please click the link below:\n"
-                + appUrl + "/api/signup/confirm?token=" + user.getConfirmationToken());
+                + appUrl + "/api/signup/confirmToken?token=" + user.getConfirmationToken());
         registrationEmail.setFrom("Form Submission Portal <noreply@formsubmissionportal.com>");
         emailService.sendEmail(registrationEmail);
     }
 
 
     // Process confirmation link
-    @RequestMapping(value="/confirm", method = RequestMethod.GET)
-    public ModelAndView confirmRegistration(@RequestParam("token") String token, ModelAndView modelAndView) {
+    @RequestMapping(value="/confirmToken", method = RequestMethod.GET)
+    @ResponseBody
+    public Object confirmRegistration(@RequestParam("token") String token, ModelAndView modelAndView) {
         User user = userService.findByConfirmationToken(token);
 
         if (user == null) { // No token found in DB
-            modelAndView.addObject("invalidToken", "Oops!  This is an invalid confirmation link.");
+            return "Invalid Token";
         } else { // Token found
             modelAndView.addObject("confirmationToken", user.getConfirmationToken());
+            modelAndView.setViewName("confirm");
+            return modelAndView;
         }
-
-        modelAndView.setViewName("confirm");
-        return modelAndView;
     }
 
     // Process confirmation link
-    @RequestMapping(value="/confirm")
-    public ModelAndView confirmRegistration(ModelAndView modelAndView, BindingResult bindingResult, @RequestParam Map<String, String> requestParams, RedirectAttributes redir) {
-
-
-        modelAndView.setViewName("confirm");
+    @RequestMapping(value="/confirmPassword")
+    @ResponseBody
+    public Object confirmRegistration(ModelAndView modelAndView, BindingResult bindingResult, @RequestParam Map<String, String> requestParams, RedirectAttributes redir) {
 
         Zxcvbn passwordCheck = new Zxcvbn();
 
         Strength strength = passwordCheck.measure(requestParams.get("password"));
 
-        if (strength.getScore() < 3) {
+        if (strength.getScore() < 1) {
             //modelAndView.addObject("errorMessage", "Your password is too weak.  Choose a stronger one.");
             bindingResult.reject("password");
 
             redir.addFlashAttribute("errorMessage", "Your password is too weak.  Choose a stronger one.");
 
-            modelAndView.setViewName("redirect:/api/signup/confirm?token=" + requestParams.get("token"));
+            modelAndView.setViewName("redirect:/api/signup/confirmToken?token=" + requestParams.get("token"));
             return modelAndView;
         }
 
@@ -159,12 +157,12 @@ public class RegisterController {
 
         if(user==null){
             redir.addFlashAttribute("errorMessage", "Link expired or Wrong link!");
-            modelAndView.setViewName("redirect:/api/signup/confirm?token=" + requestParams.get("token"));
+            modelAndView.setViewName("redirect:/api/signup/confirmToken?token=" + requestParams.get("token"));
             return modelAndView;
         }
         if(user.isEnabled()){
             redir.addFlashAttribute("errorMessage", "Link expired or Wrong link!");
-            modelAndView.setViewName("redirect:/api/signup/confirm?token=" + requestParams.get("token"));
+            modelAndView.setViewName("redirect:/api/signup/confirmToken?token=" + requestParams.get("token"));
             return modelAndView;
         }
         // Set new password
@@ -173,11 +171,11 @@ public class RegisterController {
         // Set user to enabled
         user.setEnabled(true);
 
+        user.setConfirmationToken("");
+
         // Save user
         userService.saveUser(user);
-
-        modelAndView.addObject("successMessage", "Your password has been set!");
-        return modelAndView;
+        return "Password set!";
     }
 
 }
