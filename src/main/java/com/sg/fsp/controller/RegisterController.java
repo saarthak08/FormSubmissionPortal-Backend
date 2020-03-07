@@ -50,6 +50,12 @@ public class RegisterController {
     }
 
 
+    @GetMapping(value = "/hello")
+    @ResponseBody
+    public String hello() {
+        return "hello";
+    }
+
 
     // Process form input data
     @ResponseBody

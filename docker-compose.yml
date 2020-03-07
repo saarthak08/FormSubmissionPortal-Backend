@@ -1,6 +1,6 @@
 # Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
 
-version: '3.7'
+version: '3.3'
 
 # Define services
 services:
@@ -8,8 +8,9 @@ services:
   app-server:
     # Configuration for building the docker image for the backend service
     build:
-      context: . # Use an image built from the specified dockerfile in the `polling-app-server` directory.
+      context: . # Use an image built from the specified dockerfile in the `FormSubmissionPortal-Backend` directory.
       dockerfile: Dockerfile
+    image: saarthak08/fsp-backend
     ports:
       - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
     restart: always
