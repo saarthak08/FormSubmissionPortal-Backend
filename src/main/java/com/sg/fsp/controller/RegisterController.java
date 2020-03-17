@@ -139,19 +139,7 @@ public class RegisterController {
     @ResponseBody
     public Object confirmRegistration(ModelAndView modelAndView, BindingResult bindingResult, @RequestParam Map<String, String> requestParams, RedirectAttributes redir) {
 
-        Zxcvbn passwordCheck = new Zxcvbn();
 
-        Strength strength = passwordCheck.measure(requestParams.get("password"));
-
-        if (strength.getScore() < 1) {
-            //modelAndView.addObject("errorMessage", "Your password is too weak.  Choose a stronger one.");
-            bindingResult.reject("password");
-
-            redir.addFlashAttribute("errorMessage", "Your password is too weak.  Choose a stronger one.");
-
-            modelAndView.setViewName("redirect:/api/signup/confirmToken?token=" + requestParams.get("token"));
-            return modelAndView;
-        }
 
         // Find the user associated with the reset token
         User user = userService.findByConfirmationToken(requestParams.get("token"));

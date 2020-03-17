@@ -124,6 +124,21 @@ public class InitialDataLoader implements
             userRepository.save(userStudent);
 
 
+
+            Form form2 = new Form();
+            form2.setDepartment("Computer");
+            form2.setTitle("Demo-Form");
+            form2.setFormCode("FORM2");
+            userFormCheckpoints = new FormCheckpoints();
+            checkPoint = new HashMap<>();
+            checkPoint.put(UserType.DEAN.name(), "dean@myamu.ac.in");
+            checkPoint.put(UserType.PROVOST.name(), "provost@myamu.ac.in");
+            userFormCheckpoints.setCheckPoints(checkPoint);
+            form.setFormCheckpoints(userFormCheckpoints);
+            userFormCheckpoints.setForm(form2);
+            formRepository.save(form2);
+            userRepository.save(userStudent);
+
         }
         alreadySetup = true;
     }
