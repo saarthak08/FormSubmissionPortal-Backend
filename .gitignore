@@ -32,9 +32,9 @@ build/
 
 *.DS_Store
 
-*application.properties
+*application-heroku.properties
 
-application.properties
+application-heroku.properties
 
 .DS_Store
 
